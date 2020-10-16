@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+		<title>RPC接口</title>
+        <meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="author" content="kovey">
+        <style>
+            html, body{height:100%;margin:0;padding:0;}
+            .refentry{position:relative;min-height:99%;overflow : hidden;}
+            footer {text-align: center;height:50px;margin-top:-50px;width:99%;bottom: 0;position:absolute;}
+            .text-muted {color:#6c757d !important;}
+            .form-group {margin-bottom: 1rem;}
+            .row {display: -ms-flexbox;display: flex;-ms-flex-wrap: wrap;flex-wrap: wrap;margin-right: -15px;margin-left: -15px;}
+            *, ::after, ::before {box-sizing: border-box;}
+            label {display: inline-block;margin-bottom: .5rem;}
+            .col, .col-1, .col-10, .col-11, .col-12, .col-2, .col-3, .col-4, .col-5, .col-6, .col-7, .col-8, .col-9, .col-auto, .col-lg, .col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-auto, .col-md, .col-md-1, .col-md-10, .col-md-11, .col-md-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-md-auto, .col-sm, .col-sm-1, .col-sm-10, .col-sm-11, .col-sm-12, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-auto, .col-xl, .col-xl-1, .col-xl-10, .col-xl-11, .col-xl-12, .col-xl-2, .col-xl-3, .col-xl-4, .col-xl-5, .col-xl-6, .col-xl-7, .col-xl-8, .col-xl-9, .col-xl-auto {position: relative;width: 100%;padding-right: 15px;padding-left: 15px;}
+            .col-sm-2 {-ms-flex: 0 0 16.666667%;flex: 0 0 16.666667%;max-width: 16.666667%;}
+            .col-form-label {padding-top: calc(.375rem + 1px);padding-bottom: calc(.375rem + 1px);margin-bottom: 0;font-size: inherit;line-height: 1.5;}
+            .col, .col-1, .col-10, .col-11, .col-12, .col-2, .col-3, .col-4, .col-5, .col-6, .col-7, .col-8, .col-9, .col-auto, .col-lg, .col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-auto, .col-md, .col-md-1, .col-md-10, .col-md-11, .col-md-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-md-auto, .col-sm, .col-sm-1, .col-sm-10, .col-sm-11, .col-sm-12, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-auto, .col-xl, .col-xl-1, .col-xl-10, .col-xl-11, .col-xl-12, .col-xl-2, .col-xl-3, .col-xl-4, .col-xl-5, .col-xl-6, .col-xl-7, .col-xl-8, .col-xl-9, .col-xl-auto {position: relative;width: 100%;padding-right: 15px;padding-left: 15px;}
+            .col-sm-10 {-ms-flex: 0 0 83.333333%;flex: 0 0 83.333333%;max-width: 83.333333%;}
+            button, input, optgroup, select, textarea {margin: 0;font-family: inherit;font-size: inherit;line-height: inherit;}
+            button, input {overflow: visible;}
+            .form-control {display: block;width: 100%;height: calc(1.5em + .75rem + 2px);padding: .375rem .75rem;font-size: 1rem;font-weight: 400;line-height: 1.5;color: #495057;background-color:#fff;background-clip: padding-box;border: 1px solid#ced4da;border-radius: .25rem;transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;}
+            button, input, optgroup, select, textarea {margin: 0;margin-left: 0px;font-family: inherit;font-size: inherit;line-height: inherit;}
+            button, select {text-transform: none;}
+            [type="button"], [type="reset"], [type="submit"], button {-webkit-appearance: button;}
+            .btn {display: inline-block;font-weight: 400;color: #212529;text-align: center;vertical-align: middle;-webkit-user-select: none;-moz-user-select: none;-ms-user-select: none;user-select: none;background-color: transparent;border: 1px solid transparent;border-top-color: transparent;border-right-color: transparent;border-bottom-color: transparent;border-left-color: transparent;padding: .375rem .75rem;font-size: 1rem;line-height: 1.5;border-radius: .25rem;transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;}
+            .btn-primary {color: #fff;background-color:#007bff;border-color:#007bff;}
+            .btn-secondary {color:#fff;background-color:#6c757d;border-color:#6c757d;}
+            [type="button"]:not(:disabled), [type="reset"]:not(:disabled), [type="submit"]:not(:disabled), button:not(:disabled) {cursor: pointer;}
+            .modal-header {display: -ms-flexbox;display: flex;-ms-flex-align: start;align-items: flex-start;-ms-flex-pack: justify;justify-content: space-between;padding: 1rem 1rem;border-bottom: 1px solid #dee2e6;border-top-left-radius: .3rem;border-top-right-radius: .3rem;}
+            h1, h2, h3, h4, h5, h6 {margin-top: 0;margin-bottom: .5rem;}
+            .h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {margin-bottom: .5rem;font-weight: 500;line-height: 1.2;}
+            .h5, h5 {font-size: 1.25rem;}
+            .modal-title {margin-bottom: 0;line-height: 1.5;}
+            .modal-body {position: relative;-ms-flex: 1 1 auto;flex: 1 1 auto;padding: 1rem;}
+            .modal-footer {display: -ms-flexbox;display: flex;-ms-flex-align: center;align-items: center;-ms-flex-pack: end;justify-content: flex-end;padding: 1rem;border-top: 1px solid #dee2e6;border-bottom-right-radius: .3rem;border-bottom-left-radius: .3rem;}
+            .modal-footer > :not(:last-child) {margin-right: .25rem;}
+            .modal-content {position: relative;display: -ms-flexbox;display: flex;-ms-flex-direction: column;flex-direction: column;width: 100%;pointer-events: auto;background-color: #fff;background-clip: padding-box;border: 1px solid rgba(0,0,0,.2);border-radius: .3rem;outline: 0;}
+        </style>
+    </head>
+
+    <body class="docs">
+		<div class="refentry">
+			<main role="main" class="container-fluid" style="margin-bottom:50px;">
+                <div class="modal-content" style="margin:2rem;width:50%;margin: 1.75rem auto;">
+                  <div class="modal-header">
+                  <h5 class="modal-title"><?php echo $this->service . '::' . $this->method . ' Interface Test'; ?>(array use json string instead)</h5>
+                  </div>
+                  <div class="modal-body">
+                    <form>
+                      <?php foreach ($this->args as $arg): ?>
+                          <div class="form-group row">
+                            <label for="php-args-<?php echo str_replace('$', '', $arg['param']); ?>" class="col-sm-2 col-form-label"><?php echo $arg['param']; ?></label>
+                            <div class="col-sm-10">
+                                <select class="form-control php-args-type" style="display:initial;width:15%;">
+                                    <?php foreach ($this->argsType as $key => $val): ?>
+                                        <?php if ($key === $arg['type']): ?>
+                                            <option value="<?php echo $key; ?>" selected><?php echo $val;?></option>
+                                        <?php else: ?>
+                                            <option value="<?php echo $key; ?>"><?php echo $val;?></option>
+                                        <?php endif ?>
+                                    <?php endforeach ?>
+                                </select>
+                                <input type="text" class="form-control php-params" id="php-args-<?php echo str_replace('$', '', $arg['param'])?>" placeholder="<?php echo $arg['type']; ?>"  style="display:initial;width:84%;" value="<?php echo $arg['default']; ?>">
+                            </div>
+                          </div>
+                      <?php endforeach ?>
+                    </form>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="php-back-btn">Back to Interface List</button>
+                    <button type="button" class="btn btn-primary" id="php-test-btn">Interface Test</button>
+                  </div>
+                </div>
+                <div class="modal-content" style="margin:2rem;width:50%;margin: 1.75rem auto;">
+                  <div class="modal-header">
+                  <h5 class="modal-title">Test Result</h5>
+                  </div>
+                  <div class="modal-body" id="php-run-result">
+                  </div>
+                </div>
+            </main>
+            <footer> 
+              <p>	
+                Powered by: <a href="http://www.kovey.cn/">Kovey</a> Copyright © <?php echo date('Y'); ?> Kovey.
+              </p>
+            </footer>
+        </div>
+    <script type="text/javascript">
+        var $ = function (id) {
+            var first = id.substr(0, 1);
+            if (first == '#') {
+                return document.getElementById(id.substr(1, id.length - 1));
+            }
+
+            if (first == '.') {
+                return document.getElementsByClassName(id.substr(1, id.length - 1));
+            }
+
+            return null;
+        }
+
+        function formatArgs(item) {
+            if (item == undefined || item.previousElementSibling == undefined) {
+                return null;
+            }
+
+            var type = item.previousElementSibling.value;
+            var arg = {
+                type: type
+            };
+            if (type == 'boolean') {
+                if (item.value == 'true' || item.value == 1)  {
+                    arg.value = true;
+                    return arg;
+                }
+
+                arg.value = false;
+                return arg;
+            }
+
+            arg.value = item.value;
+            return arg;
+        }
+
+        $('#php-back-btn').onclick = function () {
+            window.location.href = '/';
+        }
+
+        $('#php-test-btn').onclick = function () {
+            var params = $('.php-params');
+            var args = [];
+            for (var i in params) {
+                if (typeof params[i] != 'object') {
+                    continue;
+                }
+
+                var val = formatArgs(params[i]);
+                if (val == null) {
+                    continue;
+                }
+
+                args.push(val);
+            }
+
+            ajax({
+                type: 'POST',
+                url: '/call/service',
+                contentType: 'application/json',
+                data: {
+                    service: '<?php echo $this->service;?>',
+                    method: '<?php echo $this->method;?>',
+                    args: args
+                },
+                success: function (status, data, xml) {
+                    $('#php-run-result').innerHTML = data;
+                },
+                error: function (status, data, xml) {
+                    $('#php-run-result').innerHTML = data;
+                },
+                before: function (xhr) {
+                    $('#php-run-result').innerHTML = 'requesting...';
+                }
+            });
+        }
+
+        function ajax(options) {
+            options = options || {};
+            options.type = (options.type || 'GET').toUpperCase();
+            options.dataType = options.dataType || 'json';
+            options.contentType = options.contentType || 'application/x-www-form-urlencoded';
+            params = formatParams(options.data, options.contentType);
+            var xhr;
+            if (window.XMLHttpRequest) {
+                xhr = new XMLHttpRequest();
+            } else {
+                xhr=ActiveXObject('Microsoft.XMLHTTP');
+            }
+
+            xhr.onreadystatechange = function () {
+                if (typeof options.complete == 'function') {
+                    options.complete(xhr.status, xhr.responseText, xhr.responseXML);
+                }
+
+                if (xhr.readyState == 4) {
+                    if (xhr.status >= 200 && xhr. status < 300) {
+                        if (typeof options.success == 'function') {
+                            options.success(xhr.status, xhr.responseText, xhr.responseXML);
+                        }
+                        return;
+                    }
+
+                    if (typeof options.error == 'function') {
+                        options.error(xhr.status, xhr.responseText, xhr.responseXML);
+                    }
+                }
+            }
+
+            if (typeof options.before == 'function') {
+                options.before(xhr);
+            }
+
+            if (options.type == 'GET') {
+                xhr.open('GET', options.url + '?'+ params, true);
+                xhr.send(null);
+            } else if (options.type == 'POST') {
+                xhr.open('POST', options.url, true);
+                xhr.setRequestHeader("Content-Type", options.contentType);
+                xhr.send(params);
+            }
+        }
+
+        function formatParams (data, contentType) {
+            if (contentType == 'application/json') {
+                return JSON.stringify(data);
+            }
+
+            var arr=[];
+            for (var name in data) {
+                if (typeof data[name] == 'object') {
+                    for (var i in data[name]) {
+                        arr.push(encodeURIComponent(name + '[' + i + ']') + '=' + encodeURIComponent(data[name][i]));
+                    }
+                    continue;
+                }
+
+                arr.push(encodeURIComponent(name) + '=' + encodeURIComponent(data[name]));
+            }
+            arr.push(('v=' + Math.random()).replace('.',''));
+            return arr.join('&');
+        }
+    </script>
+    </body
+</html>
