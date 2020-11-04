@@ -16,7 +16,7 @@ use Kovey\Library\Container\ContainerInterface;
 use Kovey\Library\Config\Manager;
 use Kovey\Rpc\App\Bootstrap\Autoload;
 use Kovey\Library\Server\PortInterface;
-use Kovey\Library\Logger\Monitor;
+use Kovey\Logger\Monitor;
 use Kovey\Library\Exception\KoveyException;
 
 class AppBase

@@ -16,7 +16,7 @@ use Kovey\Connection\Pool\PoolInterface;
 use Kovey\Library\Server\PortInterface;
 use Kovey\Rpc\Server\Server;
 use Kovey\Library\Process\UserProcess;
-use Kovey\Library\Logger\Logger;
+use Kovey\Logger\Logger;
 use Kovey\Library\Exception\KoveyException;
 use Kovey\Rpc\App\AppBase;
 use Kovey\Connection\AppInterface;

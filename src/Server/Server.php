@@ -16,7 +16,7 @@ use Kovey\Library\Protocol\ProtocolInterface;
 use Kovey\Library\Exception\BusiException;
 use Kovey\Library\Exception\KoveyException;
 use Kovey\Library\Exception\ProtocolException;
-use Kovey\Library\Logger\Logger;
+use Kovey\Logger\Logger;
 use Kovey\Library\Server\PortInterface;
 use Swoole\Server\Port;
 
@@ -408,7 +408,7 @@ class Server implements PortInterface
                 'code' => $e->getCode(),
                 'packet' => $packet->getClear()
             );
-            Logger::writeExceptionLog(__LINE__, __FILE__, $e);
+            Logger::writeExceptionLog(__LINE__, __FILE__, $e, $packet->getTraceId());
         } catch (KoveyException $e) {
             $result = array(
                 'err' => $e->getMessage(),
@@ -416,10 +416,10 @@ class Server implements PortInterface
                 'code' => $e->getCode(),
                 'packet' => $packet->getClear()
             );
-            Logger::writeExceptionLog(__LINE__, __FILE__, $e);
+            Logger::writeExceptionLog(__LINE__, __FILE__, $e, $packet->getTraceId());
         } catch (\Throwable $e) {
 			if ($this->isRunDocker) {
-				Logger::writeExceptionLog(__LINE__, __FILE__, $e);
+				Logger::writeExceptionLog(__LINE__, __FILE__, $e, $packet->getTraceId());
 			} else {
 				echo $e->getMessage() . PHP_EOL . $e->getTraceAsString() . PHP_EOL;
 			}

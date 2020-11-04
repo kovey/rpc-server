@@ -13,9 +13,9 @@ namespace Kovey\Rpc\App\Bootstrap;
 
 use Kovey\Library\Process;
 use Kovey\Library\Config\Manager;
-use Kovey\Library\Logger\Logger;
-use Kovey\Library\Logger\Monitor;
-use Kovey\Library\Logger\Db;
+use Kovey\Logger\Logger;
+use Kovey\Logger\Monitor;
+use Kovey\Logger\Db;
 use Kovey\Library\Container\Container;
 use Kovey\Rpc\Application;
 use Kovey\Rpc\Server\Server;
@@ -37,6 +37,7 @@ class Bootstrap
 	{
 		ko_change_process_name(Manager::get('server.rpc.name') . ' rpc root');
 		Logger::setLogPath(Manager::get('server.logger.info'), Manager::get('server.logger.exception'), Manager::get('server.logger.error'), Manager::get('server.logger.warning'));
+        Logger::setCategory(Manager::get('server.rpc.name'));
 		Db::setLogDir(Manager::get('server.logger.db'));
 		Monitor::setLogDir(Manager::get('server.logger.monitor'));
 	}

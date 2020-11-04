@@ -16,7 +16,7 @@ use Kovey\Library\Protocol\ProtocolInterface;
 use Kovey\Rpc\Protocol\Json;
 use Kovey\Library\Exception\BusiException;
 use Kovey\Library\Exception\KoveyException;
-use Kovey\Library\Logger\Logger;
+use Kovey\Logger\Logger;
 
 class Port extends Base
 {
@@ -149,7 +149,7 @@ class Port extends Base
 				return;
 			}
 
-			$result = call_user_func($this->events['handler'], $packet->getPath(), $packet->getMethod(), $packet->getArgs());
+			$result = call_user_func($this->events['handler'], $packet->getPath(), $packet->getMethod(), $packet->getArgs(), $packet->getTraceId());
 			if ($result['code'] > 0) {
 				$result['packet'] = $packet->getClear();
 			}
@@ -160,6 +160,7 @@ class Port extends Base
                 'code' => $e->getCode(),
                 'packet' => $packet->getClear()
             );
+            Logger::writeExceptionLog(__LINE__, __FILE__, $e, $packet->getTraceId());
         } catch (KoveyException $e) {
             $result = array(
                 'err' => $e->getMessage(),
@@ -167,8 +168,9 @@ class Port extends Base
                 'code' => $e->getCode(),
                 'packet' => $packet->getClear()
             );
+            Logger::writeExceptionLog(__LINE__, __FILE__, $e, $packet->getTraceId());
         } catch (\Throwable $e) {
-            Logger::writeExceptionLog(__LINE__, __FILE__, $e);
+            Logger::writeExceptionLog(__LINE__, __FILE__, $e, $packet->getTraceId());
             $result = array(
                 'err' => $e->getMessage() . PHP_EOL . $e->getTraceAsString(),
                 'type' => 'exception',
