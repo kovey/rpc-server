@@ -15,6 +15,7 @@ use Kovey\Rpc\Protocol\Json;
 use Kovey\Library\Protocol\ProtocolInterface;
 use Kovey\Library\Exception\BusiException;
 use Kovey\Library\Exception\KoveyException;
+use Kovey\Library\Exception\ProtocolException;
 use Kovey\Library\Logger\Logger;
 use Kovey\Library\Server\PortInterface;
 use Swoole\Server\Port;
@@ -316,9 +317,24 @@ class Server implements PortInterface
     public function receive($serv, $fd, $reactor_id, $data)
     {
         $proto = null;
-        if (isset($this->events['unpack'])) {
-            $proto = call_user_func($this->events['unpack'], $data, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
-            if (!$proto instanceof ProtocolInterface) {
+        try {
+            if (isset($this->events['unpack'])) {
+                $proto = call_user_func($this->events['unpack'], $data, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
+                if (!$proto instanceof ProtocolInterface) {
+                    $this->send(array(
+                        'err' => 'parse data error',
+                        'type' => 'exception',
+                        'code' => 1000,
+                        'packet' => $data
+                    ), $fd);
+                    $serv->close($fd);
+                    return;
+                }
+            } else {
+                $proto = new Json($data, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
+            }
+
+            if (!$proto->parse()) {
                 $this->send(array(
                     'err' => 'parse data error',
                     'type' => 'exception',
@@ -328,20 +344,27 @@ class Server implements PortInterface
                 $serv->close($fd);
                 return;
             }
-        } else {
-            $proto = new Json($data, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
-        }
-
-		if (!$proto->parse()) {
-			$this->send(array(
-				'err' => 'parse data error',
-				'type' => 'exception',
-				'code' => 1000,
-				'packet' => $data
-			), $fd);
+        } catch (ProtocolException $e) {
+            $this->send(array(
+                'err' => $e->getMessage() . PHP_EOL . $e->getTraceAsString(),
+                'type' => 'protocol_exception',
+                'code' => $e->getCode(),
+                'packet' => $data
+            ), $fd);
             $serv->close($fd);
-			return;
-		}
+            Logger::writeExceptionLog(__LINE__, __FILE__, $e);
+            return;
+        } catch (KoveyException $e) {
+            $this->send(array(
+                'err' => $e->getMessage() . PHP_EOL . $e->getTraceAsString(),
+                'type' => 'kovey_exception',
+                'code' => $e->getCode(),
+                'packet' => $data
+            ), $fd);
+            $serv->close($fd);
+            Logger::writeExceptionLog(__LINE__, __FILE__, $e);
+            return;
+        }
 
         $this->handler($proto, $fd);
 
@@ -374,7 +397,7 @@ class Server implements PortInterface
 				return;
 			}
 
-			$result = call_user_func($this->events['handler'], $packet->getPath(), $packet->getMethod(), $packet->getArgs());
+			$result = call_user_func($this->events['handler'], $packet->getPath(), $packet->getMethod(), $packet->getArgs(), $packet->getTraceId());
 			if ($result['code'] > 0) {
 				$result['packet'] = $packet->getClear();
 			}
@@ -385,6 +408,7 @@ class Server implements PortInterface
                 'code' => $e->getCode(),
                 'packet' => $packet->getClear()
             );
+            Logger::writeExceptionLog(__LINE__, __FILE__, $e);
         } catch (KoveyException $e) {
             $result = array(
                 'err' => $e->getMessage(),
@@ -392,6 +416,7 @@ class Server implements PortInterface
                 'code' => $e->getCode(),
                 'packet' => $packet->getClear()
             );
+            Logger::writeExceptionLog(__LINE__, __FILE__, $e);
         } catch (\Throwable $e) {
 			if ($this->isRunDocker) {
 				Logger::writeExceptionLog(__LINE__, __FILE__, $e);
@@ -407,8 +432,10 @@ class Server implements PortInterface
         }
 
         $this->send($result, $fd);
-		$end = microtime(true);
-		$this->monitor($begin, $end, $packet, $reqTime, $result, $fd);
+        go (function ($begin, $packet, $reqTime, $result, $fd) {
+            $end = microtime(true);
+            $this->monitor($begin, $end, $packet, $reqTime, $result, $fd);
+        }, $begin, $packet, $reqTime, $result, $fd);
     }
 
 	/**
@@ -447,7 +474,8 @@ class Server implements PortInterface
 				'time' => $reqTime,
 				'timestamp' => date('Y-m-d H:i:s', $reqTime),
                 'minute' => date('YmdHi', $reqTime),
-                'result' => $result['result']
+                'result' => $result['result'],
+                'traceId' => $packet->getTraceId()
 			));
 		} catch (\Throwable $e) {
 			if ($this->isRunDocker) {

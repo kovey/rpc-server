@@ -116,12 +116,14 @@ class AppBase
 	 * @param string $method
 	 *
 	 * @param Array $args
+     *
+     * @param string $traceId
 	 *
 	 * @return Array
 	 */
-	public function handler(string $class, string $method, Array $args) : Array
+	public function handler(string $class, string $method, Array $args, string $traceId) : Array
 	{
-		$instance = $this->container->get($this->config['rpc']['handler'] . '\\' . ucfirst($class));
+		$instance = $this->container->get($this->config['rpc']['handler'] . '\\' . ucfirst($class), $traceId);
 		if (!$instance instanceof HandlerAbstract) {
 			return array(
 				'err' => sprintf('%s is not extends HandlerAbstract', ucfirst($class)),

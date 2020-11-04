@@ -19,7 +19,7 @@
     ],
     "require": {
         "php": ">=8.0",
-        "ext-swoole": ">=4.4",
+        "ext-swoole": ">=4.5.5",
         "kovey/library": "^1.0",
         "kovey/connection": "^1.0"
     },

@@ -15,6 +15,7 @@ use Kovey\Library\Server\Base;
 use Kovey\Library\Protocol\ProtocolInterface;
 use Kovey\Rpc\Protocol\Json;
 use Kovey\Library\Exception\BusiException;
+use Kovey\Library\Exception\KoveyException;
 use Kovey\Library\Logger\Logger;
 
 class Port extends Base
@@ -159,6 +160,13 @@ class Port extends Base
                 'code' => $e->getCode(),
                 'packet' => $packet->getClear()
             );
+        } catch (KoveyException $e) {
+            $result = array(
+                'err' => $e->getMessage(),
+                'type' => 'kovey_exception',
+                'code' => $e->getCode(),
+                'packet' => $packet->getClear()
+            );
         } catch (\Throwable $e) {
             Logger::writeExceptionLog(__LINE__, __FILE__, $e);
             $result = array(
@@ -209,7 +217,8 @@ class Port extends Base
 				'ip' => $this->serv->getClientInfo($fd)['remote_ip'],
 				'time' => $reqTime,
 				'timestamp' => date('Y-m-d H:i:s', $reqTime),
-				'minute' => date('YmdHi', $reqTime),
+                'minute' => date('YmdHi', $reqTime),
+                'traceId' => $packet->getTraceId()
 			));
 		} catch (\Throwable $e) {
             Logger::writeExceptionLog(__LINE__, __FILE__, $e);

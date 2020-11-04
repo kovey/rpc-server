@@ -15,6 +15,7 @@ use Kovey\Library\Util\Util;
 use Kovey\Library\Encryption\Encryption;
 use Kovey\Library\Exception\ProtocolException;
 use Kovey\Library\Protocol\ProtocolInterface;
+use Kovey\Library\Util\Json as JS;
 
 class Json implements ProtocolInterface
 {
@@ -56,9 +57,9 @@ class Json implements ProtocolInterface
 	/**
 	 * @description 明文
 	 *
-	 * @var string
+	 * @var Array
 	 */
-	private string $clear;
+	private Array $clear;
 
 	/**
 	 * @description 加密类型
@@ -73,6 +74,13 @@ class Json implements ProtocolInterface
 	 * @var bool
 	 */
 	private bool $isPub;
+
+    /**
+     * @description trace Id
+     *
+     * @var string
+     */
+    private string $traceId;
 
 	/**
 	 * @description 构造函数
@@ -100,7 +108,7 @@ class Json implements ProtocolInterface
 	 *
 	 * @return bool
 	 */
-	public function parse()
+	public function parse() : bool
 	{
 		$this->clear = self::unpack($this->body, $this->secretKey, $this->encryptType, $this->isPub);
 		if (empty($this->clear)) {
@@ -126,6 +134,7 @@ class Json implements ProtocolInterface
 		$this->path  = $this->clear['p'];
 		$this->method = $this->clear['m'];
 		$this->args = $this->clear['a'] ?? array();
+        $this->traceId = $this->clear['t'] ?? '';
 
 		return true;
 	}
@@ -167,8 +176,18 @@ class Json implements ProtocolInterface
 	 */
 	public function getClear() : string
 	{
-		return $this->clear;
+		return JS::encode($this->clear);
 	}
+
+    /**
+     * @description get traceId
+     *
+     * @return string
+     */
+    public function getTraceId() : string
+    {
+        return $this->traceId;
+    }
 
 	/**
 	 * @description 打包
@@ -185,7 +204,7 @@ class Json implements ProtocolInterface
      *
      * @throws KoveyException
 	 */
-	public static function pack(Array $packet, string $secretKey, $type = 'aes', $isPub = false) : bool
+	public static function pack(Array $packet, string $secretKey, string $type = 'aes', bool $isPub = false) : string
 	{
         $data = Encryption::encrypt(json_encode($packet), $secretKey, $type, $isPub);
         return pack(self::PACK_TYPE, strlen($data)) . $data;
@@ -206,7 +225,7 @@ class Json implements ProtocolInterface
      *
      * @throws KoveyException | ProtocolException
 	 */
-	public static function unpack(string $data, string $secretKey, $type = 'aes', $isPub = false) : Array
+	public static function unpack(string $data, string $secretKey, string $type = 'aes', bool $isPub = false) : Array
 	{
         $info = unpack(self::PACK_TYPE, substr($data, self::LENGTH_OFFSET, self::HEADER_LENGTH));
         $length = $info[1] ?? 0;

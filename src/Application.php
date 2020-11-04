@@ -19,8 +19,9 @@ use Kovey\Library\Process\UserProcess;
 use Kovey\Library\Logger\Logger;
 use Kovey\Library\Exception\KoveyException;
 use Kovey\Rpc\App\AppBase;
+use Kovey\Connection\AppInterface;
 
-class Application extends AppBase
+class Application extends AppBase implements AppInterface
 {
     /**
      * @description Application 实例
@@ -86,7 +87,7 @@ class Application extends AppBase
 	 */
 	public static function getInstance() : Application
 	{
-		if (!self::$instance instanceof Application) {
+		if (empty(self::$instance) || !self::$instance instanceof Application) {
 			self::$instance = new self();
 		}
 
@@ -345,17 +346,12 @@ class Application extends AppBase
 	 *
      * @param PoolInterface $pool
      *
-     * @param string $partition
+     * @param int $partition
 	 *
 	 * @return Application
 	 */
-	public function registerPool(string $name, PoolInterface $pool, string $partition = '') : Application
+	public function registerPool(string $name, PoolInterface $pool, int $partition = 0) : AppInterface
     {
-        if (empty($partition)) {
-            $this->pools[$name] = $pool;
-            return $this;
-        }
-
         if (isset($this->pools[$name][$partition])) {
             return $this;
         }
@@ -375,16 +371,12 @@ class Application extends AppBase
 	 *
 	 * @param string $name
      * 
-     * @param string $partition
+     * @param int $partition
 	 *
 	 * @return PoolInterface
 	 */
-	public function getPool(string $name, string $partition = '') : ? PoolInterface
+	public function getPool(string $name, int $partition = 0) : ? PoolInterface
     {
-        if (empty($partition)) {
-            return $this->pools[$name] ?? null;
-        }
-
         if (!isset($this->pools[$name][$partition])) {
             if (!isset($this->events['add_pool'])) {
                 return null;

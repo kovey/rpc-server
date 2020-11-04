@@ -36,7 +36,7 @@ class CallController extends Controller
             return 'service or method is empty.';
         }
 
-        $obj = $app->getContainer()->get('Handler\\' . $service);
+        $obj = $app->getContainer()->get('Handler\\' . $service, hash('sha256', time()));
         $params = array();
         foreach ($args as $arg) {
             if ($arg['type'] != 'array') {
