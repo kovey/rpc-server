@@ -92,7 +92,7 @@ class Bootstrap
     {
         $app->serverOn('run_action', function ($request) use ($app) {
             $router = new Router($request->server['path_info'] ?? '/');
-            $instance = $app->getContainer()->get($router->getController());
+            $instance = $app->getContainer()->get($router->getController(), '');
             $instance->data = strtolower($request->server['request_method']) === 'get' ? $request->get : $request->post;
             if (empty($instance->data)) {
                 $instance->data = Json::decode($request->rawContent());
