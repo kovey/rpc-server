@@ -18,9 +18,9 @@ class Code
      *
      * @param array ...$params
      *
-     * @return Array
+     * @return string
      */
-    public static function dump(...$params) : array
+    public static function dump(...$params) : string
     {
         $result = array();
         foreach ($params as $param) {
