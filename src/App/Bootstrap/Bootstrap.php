@@ -95,7 +95,9 @@ class Bootstrap
             $instance = $app->getContainer()->get($router->getController(), '');
             $instance->data = strtolower($request->server['request_method']) === 'get' ? $request->get : $request->post;
             if (empty($instance->data)) {
-                $instance->data = Json::decode($request->rawContent());
+                if (!empty($request->getContent())) {
+                    $instance->data = Json::decode($request->getContent());
+                }
             }
             try {
                 $instance->setTemplate($router->getTemplate());
