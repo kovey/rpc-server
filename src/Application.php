@@ -209,6 +209,15 @@ class Application extends AppBase implements AppInterface
 	{
 		try {
 			foreach ($this->pools as $pool) {
+                if (is_array($pool)) {
+                    foreach ($pool as $pl) {
+                        $pl->init();
+                        if (count($pl->getErrors()) > 0) {
+                            Logger::writeErrorLog(__LINE__, __FILE__, implode(';', $pl->getErrors()));
+                        }
+                    }
+                    continue;
+                }
 				$pool->init();
 				if (count($pool->getErrors()) > 0) {
 					Logger::writeErrorLog(__LINE__, __FILE__, implode(';', $pool->getErrors()));
@@ -352,16 +361,7 @@ class Application extends AppBase implements AppInterface
 	 */
 	public function registerPool(string $name, PoolInterface $pool, int $partition = 0) : AppInterface
     {
-        if (isset($this->pools[$name][$partition])) {
-            return $this;
-        }
-
-        if (!isset($this->pools[$name])
-            || !is_array($this->pools[$name])
-        ) {
-            $this->pools[$name] = array();
-        }
-
+        $this->pools[$name] ??= array();
 		$this->pools[$name][$partition] = $pool;
 		return $this;
 	}
@@ -377,14 +377,6 @@ class Application extends AppBase implements AppInterface
 	 */
 	public function getPool(string $name, int $partition = 0) : ? PoolInterface
     {
-        if (!isset($this->pools[$name][$partition])) {
-            if (!isset($this->events['add_pool'])) {
-                return null;
-            }
-
-            call_user_func($this->events['add_pool'], $this, $name, $partition);
-        }
-
         return $this->pools[$name][$partition] ?? null;
 	}
 
