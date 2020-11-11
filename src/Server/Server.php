@@ -474,7 +474,7 @@ class Server implements PortInterface
 				'time' => $reqTime,
 				'timestamp' => date('Y-m-d H:i:s', $reqTime),
                 'minute' => date('YmdHi', $reqTime),
-                'result' => $result['result'],
+                'result' => $result['result'] ?? array(),
                 'traceId' => $packet->getTraceId()
 			));
 		} catch (\Throwable $e) {
