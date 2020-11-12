@@ -470,7 +470,7 @@ class Server implements PortInterface
 				'class' => $packet->getPath(),
 				'method' => $packet->getMethod(),
 				'args' => $packet->getArgs(),
-				'ip' => $this->serv->getClientInfo($fd)['remote_ip'],
+				'ip' => $this->getClientIP($fd),
 				'time' => $reqTime,
 				'timestamp' => date('Y-m-d H:i:s', $reqTime),
                 'minute' => date('YmdHi', $reqTime),
@@ -610,4 +610,21 @@ class Server implements PortInterface
 	{
 		return $this->serv;
 	}
+
+    /**
+     * @description get ip
+     *
+     * @param int $fd
+     *
+     * @return string
+     */
+    public function getClientIP($fd) : string
+    {
+        $info = $this->serv->getClientInfo($fd);
+        if (empty($info)) {
+            return '';
+        }
+
+        return $info['remote_ip'] ?? '';
+    }
 }
