@@ -231,7 +231,7 @@ class Json implements ProtocolInterface
         $length = $info[1] ?? 0;
 
         if (!Util::isNumber($length) || $length < 1) {
-            throw ProtocolException('unpack packet failure', 1005, 'pack_error');
+            throw new ProtocolException('unpack packet failure', 1005, 'pack_error');
         }
 
         $encrypt = substr($data, self::BODY_OFFSET, $length);
