@@ -226,11 +226,7 @@ class Server implements PortInterface
 		try {
 			call_user_func($this->events['initPool'], $this);
 		} catch (\Throwable $e) {
-			if ($this->isRunDocker) {
-				Logger::writeExceptionLog(__LINE__, __FILE__, $e);
-			} else {
-				echo $e->getMessage() . PHP_EOL . $e->getTraceAsString() . PHP_EOL;
-			}
+            Logger::writeExceptionLog(__LINE__, __FILE__, $e);
 		}
     }
 
@@ -277,14 +273,9 @@ class Server implements PortInterface
 				return;
 			}
 
-			call_user_func($this->events['pipeMessage'], $data['p'] ?? '', $data['m'] ?? '', $data['a'] ?? array());
+			call_user_func($this->events['pipeMessage'], $data['p'] ?? '', $data['m'] ?? '', $data['a'] ?? array(), $data['t'] ?? '');
         } catch (\Throwable $e) {
-			if ($this->isRunDocker) {
-				Logger::writeExceptionLog(__LINE__, __FILE__, $e);
-			} else {
-				echo $e->getMessage() . PHP_EOL .
-					$e->getTraceAsString() . PHP_EOL;
-			}
+            Logger::writeExceptionLog(__LINE__, __FILE__, $e, $data['t'] ?? '');
 		}
     }
 
@@ -403,7 +394,7 @@ class Server implements PortInterface
 			}
 		} catch (BusiException $e) {
             $result = array(
-                'err' => $e->getMessage(),
+                'err' => $e->getMessage() . PHP_EOL . $e->getTraceAsString(),
                 'type' => 'busi_exception',
                 'code' => $e->getCode(),
                 'packet' => $packet->getClear()
@@ -411,18 +402,14 @@ class Server implements PortInterface
             Logger::writeExceptionLog(__LINE__, __FILE__, $e, $packet->getTraceId());
         } catch (KoveyException $e) {
             $result = array(
-                'err' => $e->getMessage(),
+                'err' => $e->getMessage() . PHP_EOL . $e->getTraceAsString(),
                 'type' => 'kovey_exception',
                 'code' => $e->getCode(),
                 'packet' => $packet->getClear()
             );
             Logger::writeExceptionLog(__LINE__, __FILE__, $e, $packet->getTraceId());
         } catch (\Throwable $e) {
-			if ($this->isRunDocker) {
-				Logger::writeExceptionLog(__LINE__, __FILE__, $e, $packet->getTraceId());
-			} else {
-				echo $e->getMessage() . PHP_EOL . $e->getTraceAsString() . PHP_EOL;
-			}
+            Logger::writeExceptionLog(__LINE__, __FILE__, $e, $packet->getTraceId());
             $result = array(
                 'err' => $e->getMessage() . PHP_EOL . $e->getTraceAsString(),
                 'type' => 'exception',
@@ -464,6 +451,7 @@ class Server implements PortInterface
 		try {
 			call_user_func($this->events['monitor'], array(
 				'delay' => round(($end - $begin) * 1000, 2),
+                'request_time' => $begin,
 				'type' => $result['type'],
 				'err' => $result['err'],
 				'service' => $this->conf['name'],
@@ -478,11 +466,7 @@ class Server implements PortInterface
                 'traceId' => $packet->getTraceId()
 			));
 		} catch (\Throwable $e) {
-			if ($this->isRunDocker) {
-				Logger::writeExceptionLog(__LINE__, __FILE__, $e);
-			} else {
-				echo $e->getMessage() . PHP_EOL . $e->getTraceAsString() . PHP_EOL;
-			}
+            Logger::writeExceptionLog(__LINE__, __FILE__, $e);
 		}
 	}
 
@@ -504,15 +488,12 @@ class Server implements PortInterface
 			return;
 		}
 
+        $traceId = hash('sha256', uniqid($request->server['request_uri'], true) . random_int(1000000, 999999));
 		$result = array();
 		try {
-			$result = call_user_func($this->events['run_action'], $request);
+			$result = call_user_func($this->events['run_action'], $request, $traceId);
 		} catch (\Throwable $e) {
-			if ($this->isRunDocker) {
-				Logger::writeExceptionLog(__LINE__, __FILE__, $e);
-			} else {
-				echo $e->getMessage() . PHP_EOL . $e->getTraceAsString();
-			}
+            Logger::writeExceptionLog(__LINE__, __FILE__, $e, $traceId);
 			$result = array(
 				'httpCode' => 500,
 				'header' => array(
@@ -530,6 +511,7 @@ class Server implements PortInterface
 		foreach ($header as $k => $v) {
 			$response->header($k, $v);
 		}
+        $response->header('Request-Id', $traceId);
 
 		$cookie = $result['cookie'] ?? array();
 		foreach ($cookie as $cookie) {

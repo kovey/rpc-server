@@ -90,9 +90,9 @@ class Bootstrap
 
     public function __initRunAction(Application $app)
     {
-        $app->serverOn('run_action', function ($request) use ($app) {
+        $app->serverOn('run_action', function ($request, $traceId) use ($app) {
             $router = new Router($request->server['path_info'] ?? '/');
-            $instance = $app->getContainer()->get($router->getController(), '');
+            $instance = $app->getContainer()->get($router->getController(), $traceId);
             $instance->data = strtolower($request->server['request_method']) === 'get' ? $request->get : $request->post;
             if (empty($instance->data)) {
                 if (!empty($request->getContent())) {

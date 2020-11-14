@@ -210,6 +210,7 @@ class Port extends Base
 		try {
 			call_user_func($this->events['monitor'], array(
 				'delay' => round(($end - $begin) * 1000, 2),
+                'request_time' => $begin,
 				'type' => $result['type'],
 				'err' => $result['err'],
 				'service' => $this->conf['name'],

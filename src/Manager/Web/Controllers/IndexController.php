@@ -42,7 +42,11 @@ class IndexController extends Controller
         $services = array();
         if (!empty($service)) {
             $class = $handler . '\\' . ucfirst($service);
-            $services[$service] = Rf::get($class);
+            try {
+                $services[$service] = Rf::get($class);
+            } catch (\Throwable $e) {
+                $services[$service] = $e->getMessage();
+            }
             return $services;
         }
 
@@ -54,8 +58,12 @@ class IndexController extends Controller
 
             $service = substr($file, 0, strlen($file) - 4);
             $class = $handler . '\\' . ucfirst($service);
-            $info = Rf::get($class);
-            $services[$service] = $info;
+            try {
+                $info = Rf::get($class);
+                $services[$service] = $info;
+            } catch (\Throwable $e) {
+                $services[$service] = $e->getMessage();
+            }
         }
 
         return $services;

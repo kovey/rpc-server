@@ -34,36 +34,40 @@
                 <?php foreach($this->services as $service => $methods): ?>
                     <div class="refsect1 description" id="refsect1-function.substr-description">
                       <h3 class="title"><a href="/?s=<?php echo $service;?>"><?php echo $service;?></a></h3>
-                      <?php foreach ($methods as $name => $info): ?>
-                      <div class="methodsynopsis dc-description">
-                        <p class="para rdfs-comment">
-                        <?php $i = 0; ?>
-                        <?php foreach(explode("\n", $info['doc']) as $line): ?>
-                            <?php if ($i > 0): ?>
-                                <p style="margin-top:0;margin-bottom:0;color:#000;padding-left: 0.6rem;"><?php echo $line; ?></p>
-                            <?php else:  ?>
-                                <p style="margin-top:0;margin-bottom:0;color:#000;"><?php echo $line; ?></p>
-                            <?php endif ?>
-                            <?php $i ++; ?>
-                        <?php endforeach ?>
-                        </p>
-                        <span class="methodname"><strong><?php echo $name; ?></strong></span>
-                        ( 
-                        <?php $index = 0; $total = count($info['args']);?>
-                        <?php foreach ($info['args'] as $arg): ?>
-                            <?php $index ++ ;?>
-                            <span class="methodparam">
-                            <?php if (!empty($arg['type'])): ?>
-                                <span class="type"><?php echo $arg['type']; ?></span>
-                            <?php endif ?>
-                                <code class="parameter"><?php echo $arg['param'] . (strlen($arg['default']) > 0 ? (' = ' . $arg['default']) : ''); ?></code>
-                            </span>
-                            <?php echo $index < $total ? ', ' : ''; ?>
-                        <?php endforeach ?>
-                        ) <span class="type"><a href="/call?s=<?php echo $service; ?>&m=<?php echo $name;?>&a=<?php echo urlencode(json_encode($info['args'])); ?>">test</a></span>
-                        </div>
-                        <?php endforeach ?>
-                     </div>
+                        <?php if (!is_array($methods)) : ?>
+                            <p><?php echo $methods; ?></p>
+                        <?php else : ?>
+                          <?php foreach ($methods as $name => $info): ?>
+                          <div class="methodsynopsis dc-description">
+                            <p class="para rdfs-comment">
+                            <?php $i = 0; ?>
+                            <?php foreach(explode("\n", $info['doc']) as $line): ?>
+                                <?php if ($i > 0): ?>
+                                    <p style="margin-top:0;margin-bottom:0;color:#000;padding-left: 0.6rem;"><?php echo $line; ?></p>
+                                <?php else:  ?>
+                                    <p style="margin-top:0;margin-bottom:0;color:#000;"><?php echo $line; ?></p>
+                                <?php endif ?>
+                                <?php $i ++; ?>
+                            <?php endforeach ?>
+                            </p>
+                            <span class="methodname"><strong><?php echo $name; ?></strong></span>
+                            ( 
+                            <?php $index = 0; $total = count($info['args']);?>
+                            <?php foreach ($info['args'] as $arg): ?>
+                                <?php $index ++ ;?>
+                                <span class="methodparam">
+                                <?php if (!empty($arg['type'])): ?>
+                                    <span class="type"><?php echo $arg['type']; ?></span>
+                                <?php endif ?>
+                                    <code class="parameter"><?php echo $arg['param'] . (strlen($arg['default']) > 0 ? (' = ' . $arg['default']) : ''); ?></code>
+                                </span>
+                                <?php echo $index < $total ? ', ' : ''; ?>
+                            <?php endforeach ?>
+                            ) <span class="type"><a href="/call?s=<?php echo $service; ?>&m=<?php echo $name;?>&a=<?php echo urlencode(json_encode($info['args'])); ?>">test</a></span>
+                            </div>
+                            <?php endforeach ?>
+                        <?php endif ?>
+                    </div>
                 <?php endforeach ?>
             </main>
             <footer> 
