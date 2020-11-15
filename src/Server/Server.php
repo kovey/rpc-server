@@ -451,7 +451,7 @@ class Server implements PortInterface
 		try {
 			call_user_func($this->events['monitor'], array(
 				'delay' => round(($end - $begin) * 1000, 2),
-                'request_time' => $begin,
+                'request_time' => $begin * 10000,
 				'type' => $result['type'],
 				'err' => $result['err'],
 				'service' => $this->conf['name'],
@@ -462,7 +462,7 @@ class Server implements PortInterface
 				'time' => $reqTime,
 				'timestamp' => date('Y-m-d H:i:s', $reqTime),
                 'minute' => date('YmdHi', $reqTime),
-                'result' => $result['result'] ?? array(),
+                'response' => $result['result'] ?? null,
                 'traceId' => $packet->getTraceId()
 			));
 		} catch (\Throwable $e) {

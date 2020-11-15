@@ -210,13 +210,14 @@ class Port extends Base
 		try {
 			call_user_func($this->events['monitor'], array(
 				'delay' => round(($end - $begin) * 1000, 2),
-                'request_time' => $begin,
+                'request_time' => $begin * 10000,
 				'type' => $result['type'],
 				'err' => $result['err'],
 				'service' => $this->conf['name'],
 				'class' => $packet->getPath(),
 				'method' => $packet->getMethod(),
 				'args' => $packet->getArgs(),
+                'response' => $result['result'] ?? null,
 				'ip' => $this->getClientIP($fd),
 				'time' => $reqTime,
 				'timestamp' => date('Y-m-d H:i:s', $reqTime),
