@@ -123,7 +123,9 @@ class AppBase
 	 */
 	public function handler(string $class, string $method, Array $args, string $traceId) : Array
 	{
-		$instance = $this->container->get($this->config['rpc']['handler'] . '\\' . ucfirst($class), $traceId);
+        $class = $this->config['rpc']['handler'] . '\\' . ucfirst($class);
+        $keywords = $this->container->getKeywords($class, $method);
+		$instance = $this->container->get($class, $traceId, $keywords['ext']);
 		if (!$instance instanceof HandlerAbstract) {
 			return array(
 				'err' => sprintf('%s is not extends HandlerAbstract', ucfirst($class)),
@@ -131,17 +133,20 @@ class AppBase
 				'code' => 1,
 			);
 		}
-		if (empty($args)) {
-			$result = $instance->$method();
-			return array(
-				'err' => '',
-				'type' => 'success',
-				'code' => 0,
-				'result' => $result
-			);
-		}
 
-		$result = $instance->$method(...$args);
+        if (isset($keywords['openTransaction']) && $keywords['openTransaction']) {
+            $keywords['database']->beginTransaction();
+            try {
+                $result = $instance->$method(...$args);
+                $keywords['database']->commit();
+            } catch (\Throwable $e) {
+                $keywords['database']->rollBack();
+                throw $e;
+            }
+        } else {
+            $result = $instance->$method(...$args);
+        }
+
 		return array(
 			'err' => '',
 			'type' => 'success',
