@@ -36,7 +36,9 @@ class CallController extends Controller
             return 'service or method is empty.';
         }
 
-        $obj = $app->getContainer()->get('Handler\\' . $service, hash('sha256', time()));
+        $class = 'Handler\\' . $service;
+        $keywords = $app->getContainer()->getKeywords($class, $method);
+        $obj = $app->getContainer()->get($class, hash('sha256', time()), $keywords['ext']);
         $params = array();
         foreach ($args as $arg) {
             if ($arg['type'] != 'array') {
@@ -48,7 +50,19 @@ class CallController extends Controller
         }
 
         try {
-            return Code::dump($obj->$method(...$params));
+            if ($keywords['openTransaction']) {
+                $keywords['database']->getConnection()->beginTransaction();
+                try {
+                    $result = Code::dump($obj->$method(...$params));
+                    $keywords['database']->getConnection()->commit();
+                    return $result;
+                } catch (\Throwable $e) {
+                    $keywords['database']->getConnection()->rollBack();
+                    throw $e;
+                }
+            } else {
+                return Code::dump($obj->$method(...$params));
+            }
         } catch (\Exception $e) {
             return Code::dump($e->getMessage() . PHP_EOL . $e->getTraceAsString());
         } catch (\Throwable $e) {

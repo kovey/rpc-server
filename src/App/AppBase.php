@@ -134,13 +134,13 @@ class AppBase
 			);
 		}
 
-        if (isset($keywords['openTransaction']) && $keywords['openTransaction']) {
-            $keywords['database']->beginTransaction();
+        if ($keywords['openTransaction']) {
+            $keywords['database']->getConnection()->beginTransaction();
             try {
                 $result = $instance->$method(...$args);
-                $keywords['database']->commit();
+                $keywords['database']->getConnection()->commit();
             } catch (\Throwable $e) {
-                $keywords['database']->rollBack();
+                $keywords['database']->getConnection()->rollBack();
                 throw $e;
             }
         } else {

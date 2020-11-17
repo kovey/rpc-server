@@ -488,7 +488,7 @@ class Server implements PortInterface
 			return;
 		}
 
-        $traceId = hash('sha256', uniqid($request->server['request_uri'], true) . random_int(1000000, 999999));
+        $traceId = hash('sha256', uniqid($request->server['request_uri'], true) . random_int(1000000, 9999999));
 		$result = array();
 		try {
 			$result = call_user_func($this->events['run_action'], $request, $traceId);
