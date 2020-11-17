@@ -80,7 +80,7 @@ class Code
             $result .= '<div style="margin-left:1.5rem;">' . self::dumpItem($item, $i+1) . '</div>';
         }
 
-        return $result . '<p>' . $space . '}</p>';
+        return $result . '<p>}</p>';
     }
 
     /**
@@ -104,7 +104,7 @@ class Code
             $result .= '<p style="margin-left:1.5rem;">' . self::dumpItem($pro->getValue($param), $i + 1) . '</p>';
         }
 
-        return $result . '<p>' . $space . '}</p>';
+        return $result . '<p>}</p>';
     }
 
     /**
