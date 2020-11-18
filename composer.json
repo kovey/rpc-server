@@ -20,8 +20,8 @@
     "require": {
         "php": ">=8.0",
         "ext-swoole": ">=4.5.5",
-        "kovey/library": "dev-master",
-        "kovey/connection": "dev-master",
+        "kovey/library": "^1.0",
+        "kovey/connection": "^1.0",
         "kovey/logger": "^1.0"
     },
     "require-dev": {
