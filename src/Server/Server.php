@@ -315,6 +315,7 @@ class Server implements PortInterface
                     $this->send(array(
                         'err' => 'parse data error',
                         'type' => 'exception',
+                        'trace' => '',
                         'code' => 1000,
                         'packet' => $data
                     ), $fd);
@@ -329,6 +330,7 @@ class Server implements PortInterface
                 $this->send(array(
                     'err' => 'parse data error',
                     'type' => 'exception',
+                    'trace' => '',
                     'code' => 1000,
                     'packet' => $data
                 ), $fd);
@@ -337,8 +339,9 @@ class Server implements PortInterface
             }
         } catch (ProtocolException $e) {
             $this->send(array(
-                'err' => $e->getMessage() . PHP_EOL . $e->getTraceAsString(),
+                'err' => $e->getMessage(),
                 'type' => 'protocol_exception',
+                'trace' => $e->getTraceAsString(),
                 'code' => $e->getCode(),
                 'packet' => $data
             ), $fd);
@@ -347,8 +350,9 @@ class Server implements PortInterface
             return;
         } catch (KoveyException $e) {
             $this->send(array(
-                'err' => $e->getMessage() . PHP_EOL . $e->getTraceAsString(),
+                'err' => $e->getMessage(),
                 'type' => 'kovey_exception',
+                'trace' => $e->getTraceAsString(),
                 'code' => $e->getCode(),
                 'packet' => $data
             ), $fd);
@@ -383,6 +387,7 @@ class Server implements PortInterface
 					'err' => 'handler events is not register',
 					'type' => 'kovey_exception',
 					'code' => 1000,
+                    'trace' => '',
 					'packet' => $packet->getClear()
 				), $fd);
 				return;
@@ -394,7 +399,8 @@ class Server implements PortInterface
 			}
 		} catch (BusiException $e) {
             $result = array(
-                'err' => $e->getMessage() . PHP_EOL . $e->getTraceAsString(),
+                'err' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'type' => 'busi_exception',
                 'code' => $e->getCode(),
                 'packet' => $packet->getClear()
@@ -402,7 +408,8 @@ class Server implements PortInterface
             Logger::writeExceptionLog(__LINE__, __FILE__, $e, $packet->getTraceId());
         } catch (KoveyException $e) {
             $result = array(
-                'err' => $e->getMessage() . PHP_EOL . $e->getTraceAsString(),
+                'err' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'type' => 'kovey_exception',
                 'code' => $e->getCode(),
                 'packet' => $packet->getClear()
@@ -411,7 +418,8 @@ class Server implements PortInterface
         } catch (\Throwable $e) {
             Logger::writeExceptionLog(__LINE__, __FILE__, $e, $packet->getTraceId());
             $result = array(
-                'err' => $e->getMessage() . PHP_EOL . $e->getTraceAsString(),
+                'err' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'type' => 'exception',
                 'code' => 1000,
                 'packet' => $packet->getClear()
@@ -454,6 +462,7 @@ class Server implements PortInterface
                 'request_time' => $begin * 10000,
 				'type' => $result['type'],
 				'err' => $result['err'],
+                'trace' => $result['trace'],
 				'service' => $this->conf['name'],
 				'class' => $packet->getPath(),
 				'method' => $packet->getMethod(),
