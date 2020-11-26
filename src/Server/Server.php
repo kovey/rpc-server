@@ -405,7 +405,7 @@ class Server implements PortInterface
                 'code' => $e->getCode(),
                 'packet' => $packet->getClear()
             );
-            Logger::writeExceptionLog(__LINE__, __FILE__, $e, $packet->getTraceId());
+            Logger::writeBusiException(__LINE__, __FILE__, $e, $packet->getTraceId());
         } catch (KoveyException $e) {
             $result = array(
                 'err' => $e->getMessage(),

@@ -131,6 +131,8 @@ class AppBase
                 'err' => sprintf('%s is not extends HandlerAbstract', ucfirst($class)),
                 'type' => 'exception',
                 'code' => 1,
+                'result' => null,
+                'trace' => ''
             );
         }
 
@@ -151,7 +153,8 @@ class AppBase
             'err' => '',
             'type' => 'success',
             'code' => 0,
-            'result' => $result
+            'result' => $result,
+            'trace' => ''
         );
     }
 
