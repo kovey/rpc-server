@@ -62,32 +62,32 @@ class Port extends Base
         return isset($this->allowEvents[$event]);
     }
 
-	/**
-	 * @description 链接回调
-	 *
-	 * @param Swoole\Server $serv
-	 *
-	 * @param int $fd
-	 *
-	 * @return null
-	 */
+    /**
+     * @description 链接回调
+     *
+     * @param Swoole\Server $serv
+     *
+     * @param int $fd
+     *
+     * @return null
+     */
     public function connect($serv, $fd)
     {
     }
 
-	/**
-	 * @description 接收回调
-	 *
-	 * @param Swoole\Server $serv
-	 *
-	 * @param int $fd
-	 *
-	 * @param int $reactor_id
-	 *
-	 * @param mixed $data
-	 *
-	 * @return null
-	 */
+    /**
+     * @description 接收回调
+     *
+     * @param Swoole\Server $serv
+     *
+     * @param int $fd
+     *
+     * @param int $reactor_id
+     *
+     * @param mixed $data
+     *
+     * @return null
+     */
     public function receive($serv, $fd, $reactor_id, $data)
     {
         $proto = null;
@@ -107,53 +107,53 @@ class Port extends Base
             $proto = new Json($data, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
         }
 
-		if (!$proto->parse()) {
-			$this->send(array(
-				'err' => 'parse data error',
-				'type' => 'exception',
-				'code' => 1000,
-				'packet' => $data
-			), $fd);
+        if (!$proto->parse()) {
+            $this->send(array(
+                'err' => 'parse data error',
+                'type' => 'exception',
+                'code' => 1000,
+                'packet' => $data
+            ), $fd);
             $serv->close($fd);
-			return;
-		}
+            return;
+        }
 
         $this->handler($proto, $fd);
 
         $serv->close($fd);
     }
 
-	/**
-	 * @description Hander 处理
-	 *
-	 * @param ProtocolInterface $packet
-	 *
-	 * @param int $fd
-	 *
-	 * @return null
-	 */
+    /**
+     * @description Hander 处理
+     *
+     * @param ProtocolInterface $packet
+     *
+     * @param int $fd
+     *
+     * @return null
+     */
     private function handler(ProtocolInterface $packet, $fd)
     {
-		$begin = microtime(true);
-		$reqTime = time();
-		$result = null;
+        $begin = microtime(true);
+        $reqTime = time();
+        $result = null;
 
         try {
-			if (!isset($this->events['handler'])) {
-				$this->send(array(
-					'err' => 'handler events is not register',
-					'type' => 'exception',
-					'code' => 1000,
-					'packet' => $packet->getClear()
-				), $fd);
-				return;
-			}
+            if (!isset($this->events['handler'])) {
+                $this->send(array(
+                    'err' => 'handler events is not register',
+                    'type' => 'exception',
+                    'code' => 1000,
+                    'packet' => $packet->getClear()
+                ), $fd);
+                return;
+            }
 
-			$result = call_user_func($this->events['handler'], $packet->getPath(), $packet->getMethod(), $packet->getArgs(), $packet->getTraceId());
-			if ($result['code'] > 0) {
-				$result['packet'] = $packet->getClear();
-			}
-		} catch (BusiException $e) {
+            $result = call_user_func($this->events['handler'], $packet->getPath(), $packet->getMethod(), $packet->getArgs(), $packet->getTraceId());
+            if ($result['code'] > 0) {
+                $result['packet'] = $packet->getClear();
+            }
+        } catch (BusiException $e) {
             $result = array(
                 'err' => $e->getMessage(),
                 'type' => 'busi_exception',
@@ -180,64 +180,64 @@ class Port extends Base
         }
 
         $this->send($result, $fd);
-		$end = microtime(true);
-		$this->monitor($begin, $end, $packet, $reqTime, $result, $fd);
+        $end = microtime(true);
+        $this->monitor($begin, $end, $packet, $reqTime, $result, $fd);
     }
 
-	/**
-	 * @description 监控
-	 *
-	 * @param float $begin
-	 *
-	 * @param float $end
-	 *
-	 * @param ProtocolInterface $packet
-	 *
-	 * @param int $reqTime
-	 *
-	 * @param Array $result
-	 *
-	 * @param int $fd
-	 *
-	 * @return null
-	 */
-	private function monitor(float $begin, float $end, ProtocolInterface $packet, int $reqTime, Array $result, $fd)
-	{
-		if (!isset($this->events['monitor'])) {
-			return;
-		}
+    /**
+     * @description 监控
+     *
+     * @param float $begin
+     *
+     * @param float $end
+     *
+     * @param ProtocolInterface $packet
+     *
+     * @param int $reqTime
+     *
+     * @param Array $result
+     *
+     * @param int $fd
+     *
+     * @return null
+     */
+    private function monitor(float $begin, float $end, ProtocolInterface $packet, int $reqTime, Array $result, $fd)
+    {
+        if (!isset($this->events['monitor'])) {
+            return;
+        }
 
-		try {
-			call_user_func($this->events['monitor'], array(
-				'delay' => round(($end - $begin) * 1000, 2),
+        try {
+            call_user_func($this->events['monitor'], array(
+                'delay' => round(($end - $begin) * 1000, 2),
                 'request_time' => $begin * 10000,
-				'type' => $result['type'],
-				'err' => $result['err'],
-				'service' => $this->conf['name'],
-				'class' => $packet->getPath(),
-				'method' => $packet->getMethod(),
-				'args' => $packet->getArgs(),
+                'type' => $result['type'],
+                'err' => $result['err'],
+                'service' => $this->conf['name'],
+                'class' => $packet->getPath(),
+                'method' => $packet->getMethod(),
+                'args' => $packet->getArgs(),
                 'response' => $result['result'] ?? null,
-				'ip' => $this->getClientIP($fd),
-				'time' => $reqTime,
-				'timestamp' => date('Y-m-d H:i:s', $reqTime),
+                'ip' => $this->getClientIP($fd),
+                'time' => $reqTime,
+                'timestamp' => date('Y-m-d H:i:s', $reqTime),
                 'minute' => date('YmdHi', $reqTime),
                 'traceId' => $packet->getTraceId()
-			));
-		} catch (\Throwable $e) {
+            ));
+        } catch (\Throwable $e) {
             Logger::writeExceptionLog(__LINE__, __FILE__, $e);
-		}
-	}
+        }
+    }
 
-	/**
-	 * @description 发送数据
-	 *
-	 * @param Array $packet
-	 *
-	 * @param int $fd
-	 *
-	 * @return bool
-	 */
+    /**
+     * @description 发送数据
+     *
+     * @param Array $packet
+     *
+     * @param int $fd
+     *
+     * @return bool
+     */
     private function send(Array $packet, $fd) : bool
     {
         if (!$this->serv->exist($fd)) {
@@ -251,9 +251,9 @@ class Port extends Base
             $data = Json::pack($packet, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
         }
 
-		if (!$data) {
-			return false;
-		}
+        if (!$data) {
+            return false;
+        }
 
         $len = strlen($data);
         if ($len <= self::PACKET_MAX_LENGTH) {
@@ -269,15 +269,15 @@ class Port extends Base
         return true;
     }
 
-	/**
-	 * @description 关闭链接
-	 *
-	 * @param Swoole\Server $serv
-	 *
-	 * @param int $fd
-	 *
-	 * @return null
-	 */
+    /**
+     * @description 关闭链接
+     *
+     * @param Swoole\Server $serv
+     *
+     * @param int $fd
+     *
+     * @return null
+     */
     public function close($serv, $fd)
     {
     }

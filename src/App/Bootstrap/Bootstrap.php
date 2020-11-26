@@ -26,67 +26,67 @@ use Kovey\Library\Util\Json;
 
 class Bootstrap
 {
-	/**
-	 * @description 初始化日志
-	 *
-	 * @param Application $app
-	 *
-	 * @return null
-	 */
-	public function __initLogger(Application $app)
-	{
-		ko_change_process_name(Manager::get('server.rpc.name') . ' rpc root');
-		Logger::setLogPath(Manager::get('server.logger.info'), Manager::get('server.logger.exception'), Manager::get('server.logger.error'), Manager::get('server.logger.warning'));
+    /**
+     * @description 初始化日志
+     *
+     * @param Application $app
+     *
+     * @return null
+     */
+    public function __initLogger(Application $app)
+    {
+        ko_change_process_name(Manager::get('server.rpc.name') . ' rpc root');
+        Logger::setLogPath(Manager::get('server.logger.info'), Manager::get('server.logger.exception'), Manager::get('server.logger.error'), Manager::get('server.logger.warning'));
         Logger::setCategory(Manager::get('server.rpc.name'));
-		Db::setLogDir(Manager::get('server.logger.db'));
-		Monitor::setLogDir(Manager::get('server.logger.monitor'));
-	}
+        Db::setLogDir(Manager::get('server.logger.db'));
+        Monitor::setLogDir(Manager::get('server.logger.monitor'));
+    }
 
-	/**
-	 * @description 初始化APP
-	 *
-	 * @param Application $app
-	 *
-	 * @return null
-	 */
-	public function __initApp(Application $app)
-	{
-		$app->registerServer(new Server($app->getConfig()['server']))
-			->registerContainer(new Container())
-			->registerUserProcess(new UserProcess($app->getConfig()['server']['worker_num']));
-	}
+    /**
+     * @description 初始化APP
+     *
+     * @param Application $app
+     *
+     * @return null
+     */
+    public function __initApp(Application $app)
+    {
+        $app->registerServer(new Server($app->getConfig()['server']))
+            ->registerContainer(new Container())
+            ->registerUserProcess(new UserProcess($app->getConfig()['server']['worker_num']));
+    }
 
-	/**
-	 * @description 初始化自定义进程
-	 *
-	 * @param Application $app
-	 *
-	 * @return null
-	 */
-	public function __initProcess(Application $app)
-	{
-		$app->registerProcess('kovey_config', (new Process\Config())->setProcessName(Manager::get('server.rpc.name') . ' config'));
-	}
+    /**
+     * @description 初始化自定义进程
+     *
+     * @param Application $app
+     *
+     * @return null
+     */
+    public function __initProcess(Application $app)
+    {
+        $app->registerProcess('kovey_config', (new Process\Config())->setProcessName(Manager::get('server.rpc.name') . ' config'));
+    }
 
-	/**
-	 * @description 初始化自定义的Bootsrap
-	 *
-	 * @param Application $app
-	 *
-	 * @return null
-	 */
-	public function __initCustomBoot(Application $app)
-	{
-		$bootstrap = $app->getConfig()['rpc']['boot'] ?? 'application/Bootstrap.php';
-		$file = APPLICATION_PATH . '/' . $bootstrap;
-		if (!is_file($file)) {
-			return;
-		}
+    /**
+     * @description 初始化自定义的Bootsrap
+     *
+     * @param Application $app
+     *
+     * @return null
+     */
+    public function __initCustomBoot(Application $app)
+    {
+        $bootstrap = $app->getConfig()['rpc']['boot'] ?? 'application/Bootstrap.php';
+        $file = APPLICATION_PATH . '/' . $bootstrap;
+        if (!is_file($file)) {
+            return;
+        }
 
-		require_once $file;
+        require_once $file;
 
-		$app->registerCustomBootstrap(new \Bootstrap());
-	}
+        $app->registerCustomBootstrap(new \Bootstrap());
+    }
 
     public function __initRunAction(Application $app)
     {
