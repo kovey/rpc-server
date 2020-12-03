@@ -393,7 +393,7 @@ class Server implements PortInterface
                 return;
             }
 
-            $result = call_user_func($this->events['handler'], $packet->getPath(), $packet->getMethod(), $packet->getArgs(), $packet->getTraceId());
+            $result = call_user_func($this->events['handler'], $packet->getPath(), $packet->getMethod(), $packet->getArgs(), $packet->getTraceId(), $this->getClientIP($fd));
             if ($result['code'] > 0) {
                 $result['packet'] = $packet->getClear();
             }
@@ -472,7 +472,9 @@ class Server implements PortInterface
                 'timestamp' => date('Y-m-d H:i:s', $reqTime),
                 'minute' => date('YmdHi', $reqTime),
                 'response' => $result['result'] ?? null,
-                'traceId' => $packet->getTraceId()
+                'traceId' => $packet->getTraceId(),
+                'from' => $packet->getFrom(),
+                'end' => $end * 10000
             ));
         } catch (\Throwable $e) {
             Logger::writeExceptionLog(__LINE__, __FILE__, $e);

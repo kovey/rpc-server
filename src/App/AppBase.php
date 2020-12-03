@@ -119,9 +119,11 @@ class AppBase
      *
      * @param string $traceId
      *
+     * @param string $clientIp
+     *
      * @return Array
      */
-    public function handler(string $class, string $method, Array $args, string $traceId) : Array
+    public function handler(string $class, string $method, Array $args, string $traceId, string $clientIp) : Array
     {
         $class = $this->config['rpc']['handler'] . '\\' . ucfirst($class);
         $keywords = $this->container->getKeywords($class, $method);
@@ -135,6 +137,8 @@ class AppBase
                 'trace' => ''
             );
         }
+
+        $instance->setClientIp($clientIp);
 
         if ($keywords['openTransaction']) {
             $keywords['database']->getConnection()->beginTransaction();
