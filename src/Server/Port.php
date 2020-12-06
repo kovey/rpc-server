@@ -150,7 +150,7 @@ class Port extends Base
                 return;
             }
 
-            $result = call_user_func($this->events['handler'], $packet->getPath(), $packet->getMethod(), $packet->getArgs(), $packet->getTraceId());
+            $result = call_user_func($this->events['handler'], $packet->getPath(), $packet->getMethod(), $packet->getArgs(), $packet->getTraceId(), $this->getClientIP($fd));
             if ($result['code'] > 0) {
                 $result['packet'] = $packet->getClear();
             }
