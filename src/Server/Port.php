@@ -144,6 +144,7 @@ class Port extends Base
                     'err' => 'handler events is not register',
                     'type' => 'exception',
                     'code' => 1000,
+                    'trace' => '',
                     'packet' => $packet->getClear()
                 ), $fd);
                 return;
@@ -156,6 +157,7 @@ class Port extends Base
         } catch (BusiException $e) {
             $result = array(
                 'err' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'type' => 'busi_exception',
                 'code' => $e->getCode(),
                 'packet' => $packet->getClear()
@@ -164,6 +166,7 @@ class Port extends Base
         } catch (KoveyException $e) {
             $result = array(
                 'err' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'type' => 'kovey_exception',
                 'code' => $e->getCode(),
                 'packet' => $packet->getClear()
@@ -172,7 +175,8 @@ class Port extends Base
         } catch (\Throwable $e) {
             Logger::writeExceptionLog(__LINE__, __FILE__, $e, $packet->getTraceId());
             $result = array(
-                'err' => $e->getMessage() . PHP_EOL . $e->getTraceAsString(),
+                'err' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'type' => 'exception',
                 'code' => 1000,
                 'packet' => $packet->getClear()
@@ -213,16 +217,19 @@ class Port extends Base
                 'request_time' => $begin * 10000,
                 'type' => $result['type'],
                 'err' => $result['err'],
+                'trace' => $result['trace'],
                 'service' => $this->conf['name'],
                 'class' => $packet->getPath(),
                 'method' => $packet->getMethod(),
                 'args' => $packet->getArgs(),
-                'response' => $result['result'] ?? null,
                 'ip' => $this->getClientIP($fd),
                 'time' => $reqTime,
                 'timestamp' => date('Y-m-d H:i:s', $reqTime),
                 'minute' => date('YmdHi', $reqTime),
-                'traceId' => $packet->getTraceId()
+                'response' => $result['result'] ?? null,
+                'traceId' => $packet->getTraceId(),
+                'from' => $packet->getFrom(),
+                'end' => $end * 10000
             ));
         } catch (\Throwable $e) {
             Logger::writeExceptionLog(__LINE__, __FILE__, $e);
