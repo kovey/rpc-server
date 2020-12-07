@@ -202,6 +202,11 @@ class AppBase
     public function monitor(Array $data)
     {
         Monitor::write($data);
+        if (isset($this->events['monitor'])) {
+            go (function ($data) {
+                call_user_func($this->events['monitor'], $data);
+            }, $data);
+        }
     }
 
     /**

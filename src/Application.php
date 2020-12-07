@@ -233,19 +233,6 @@ class Application extends AppBase implements AppInterface
     }
 
     /**
-     * @description 监控
-     *
-     * @param Array $data
-     *
-     * @return null
-     */
-    public function monitor(Array $data)
-    {
-        $this->userProcess->push('monitor', $data);
-        parent::monitor($data);
-    }
-
-    /**
      * @description 检测配置
      *
      * @return Application
