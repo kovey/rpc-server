@@ -16,6 +16,7 @@ use Kovey\Library\Protocol\ProtocolInterface;
 use Kovey\Rpc\Protocol\Json;
 use Kovey\Library\Exception\BusiException;
 use Kovey\Library\Exception\KoveyException;
+use Kovey\Library\Exception\ProtocolException;
 use Kovey\Logger\Logger;
 
 class Port extends Base
@@ -91,30 +92,56 @@ class Port extends Base
     public function receive($serv, $fd, $reactor_id, $data)
     {
         $proto = null;
-        if (isset($this->events['unpack'])) {
-            $proto = call_user_func($this->events['unpack'], $data, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
-            if (!$proto instanceof ProtocolInterface) {
+        try {
+            if (isset($this->events['unpack'])) {
+                $proto = call_user_func($this->events['unpack'], $data, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
+                if (!$proto instanceof ProtocolInterface) {
+                    $this->send(array(
+                        'err' => 'parse data error',
+                        'type' => 'exception',
+                        'trace' => '',
+                        'code' => 1000,
+                        'packet' => $data
+                    ), $fd);
+                    $serv->close($fd);
+                    return;
+                }
+            } else {
+                $proto = new Json($data, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
+            }
+
+            if (!$proto->parse()) {
                 $this->send(array(
                     'err' => 'parse data error',
                     'type' => 'exception',
+                    'trace' => '',
                     'code' => 1000,
                     'packet' => $data
                 ), $fd);
                 $serv->close($fd);
                 return;
             }
-        } else {
-            $proto = new Json($data, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
-        }
-
-        if (!$proto->parse()) {
+        } catch (ProtocolException $e) {
             $this->send(array(
-                'err' => 'parse data error',
-                'type' => 'exception',
-                'code' => 1000,
+                'err' => $e->getMessage(),
+                'type' => 'protocol_exception',
+                'trace' => $e->getTraceAsString(),
+                'code' => $e->getCode(),
                 'packet' => $data
             ), $fd);
             $serv->close($fd);
+            Logger::writeExceptionLog(__LINE__, __FILE__, $e);
+            return;
+        } catch (KoveyException $e) {
+            $this->send(array(
+                'err' => $e->getMessage(),
+                'type' => 'kovey_exception',
+                'trace' => $e->getTraceAsString(),
+                'code' => $e->getCode(),
+                'packet' => $data
+            ), $fd);
+            $serv->close($fd);
+            Logger::writeExceptionLog(__LINE__, __FILE__, $e);
             return;
         }
 
