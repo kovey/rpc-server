@@ -219,6 +219,7 @@ class Port extends Base
                 'err' => $result['err'],
                 'trace' => $result['trace'],
                 'service' => $this->conf['name'],
+                'service_type' => 'rpc',
                 'class' => $packet->getPath(),
                 'method' => $packet->getMethod(),
                 'args' => $packet->getArgs(),
