@@ -427,6 +427,10 @@ class Server implements PortInterface
         }
 
         $this->send($result, $fd);
+        if (isset($this->conf['monitor_open']) && $this->conf['monitor_open'] === 'Off') {
+            return;
+        }
+
         go (function ($begin, $packet, $reqTime, $result, $fd) {
             $end = microtime(true);
             $this->monitor($begin, $end, $packet, $reqTime, $result, $fd);
