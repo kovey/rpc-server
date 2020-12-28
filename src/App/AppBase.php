@@ -144,14 +144,14 @@ class AppBase
         if ($keywords['openTransaction']) {
             $keywords['database']->getConnection()->beginTransaction();
             try {
-                $result = $instance->$method(...$args);
+                $result = call_user_func(array($instance, $method), ...$args);
                 $keywords['database']->getConnection()->commit();
             } catch (\Throwable $e) {
                 $keywords['database']->getConnection()->rollBack();
                 throw $e;
             }
         } else {
-            $result = $instance->$method(...$args);
+            $result = call_user_func(array($instance, $method), ...$args);
         }
 
         return array(

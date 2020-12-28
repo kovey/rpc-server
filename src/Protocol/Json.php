@@ -120,6 +120,7 @@ class Json implements ProtocolInterface
         $this->method = '';
         $this->traceId = '';
         $this->from = '';
+        $this->clientLang = 'php';
     }
 
     /**
