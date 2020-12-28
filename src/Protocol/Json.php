@@ -90,6 +90,13 @@ class Json implements ProtocolInterface
     private string $from;
 
     /**
+     * @description client program language
+     *
+     * @var string
+     */
+    private string $clientLang;
+
+    /**
      * @description 构造函数
      *
      * @param string $body
@@ -139,15 +146,20 @@ class Json implements ProtocolInterface
             return false;
         }
 
-        if (isset($this->clear['a']) && !is_array($this->clear['a'])) {
+        $this->args = $this->clear['a'] ?? array();
+        if (!is_array($this->args)) {
+            $this->args = json_decode($this->args, true);
+        }
+
+        if (!is_array($this->args)) {
             return false;
         }
 
         $this->path  = $this->clear['p'];
         $this->method = $this->clear['m'];
-        $this->args = $this->clear['a'] ?? array();
         $this->traceId = $this->clear['t'] ?? '';
         $this->from = $this->clear['f'] ?? '';
+        $this->clientLang = $this->clear['c'] ?? 'php';
 
         return true;
     }
@@ -210,6 +222,16 @@ class Json implements ProtocolInterface
     public function getFrom() : string
     {
         return $this->from;
+    }
+
+    /**
+     * @description get client language
+     *
+     * @return string
+     */
+    public function getClientLang() : string
+    {
+        return $this->clientLang;
     }
 
     /**
