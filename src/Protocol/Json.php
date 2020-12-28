@@ -108,6 +108,11 @@ class Json implements ProtocolInterface
         $this->secretKey = $key;
         $this->encryptType = $type;
         $this->isPub = $isPub;
+        $this->args = array();
+        $this->path = '';
+        $this->method = '';
+        $this->traceId = '';
+        $this->from = '';
     }
 
     /**

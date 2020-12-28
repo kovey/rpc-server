@@ -64,6 +64,7 @@ class AppBase
     public function __construct()
     {
         $this->events = array();
+        $this->config = array();
     }
 
     /**
