@@ -12,12 +12,16 @@
 namespace Kovey\Rpc\App;
 
 use Kovey\Rpc\Handler\HandlerAbstract;
-use Kovey\Library\Container\ContainerInterface;
+use Kovey\Container\ContainerInterface;
 use Kovey\Library\Config\Manager;
 use Kovey\Rpc\App\Bootstrap\Autoload;
 use Kovey\Library\Server\PortInterface;
 use Kovey\Logger\Monitor;
 use Kovey\Library\Exception\KoveyException;
+use Kovey\Rpc\Event;
+use Kovey\Event\Dispatch;
+use Kovey\Event\Listener\Listener;
+use Kovey\Event\Listener\ListenerProvider;
 
 class AppBase
 {
@@ -54,7 +58,15 @@ class AppBase
      *
      * @var Array
      */
-    protected Array $events;
+    protected Array $onEvents;
+
+    protected static Array $events = array(
+        'pipeMessage' => Event\PipeMessage::class,
+    );
+
+    protected Dispatch $dispatch;
+
+    protected ListenerProvider $provider;
 
     /**
      * @description 构造函数
@@ -63,8 +75,10 @@ class AppBase
      */
     public function __construct()
     {
-        $this->events = array();
         $this->config = array();
+        $this->onEvents = array();
+        $this->provider = new ListenerProvider();
+        $this->dispatch = new Dispatch($this->provider);
     }
 
     /**
@@ -72,17 +86,25 @@ class AppBase
      *
      * @param string $event
      *
-     * @param callable $callable
+     * @param callable | Array $callable
      *
      * @return AppBase
      */
-    public function on(string $event, $callable) : AppBase
+    public function on(string $event, Array | callable $callable) : AppBase
     {
+        if (!isset(self::$events[$event])) {
+            return $this;
+        }
+
         if (!is_callable($callable)) {
             return $this;
         }
 
-        $this->events[$event] = $callable;
+        $this->onEvents[$event] = $event;
+        $listener = new Listener();
+        $listener->addEvent(self::$events[$event], $callable);
+        $this->provider->addListener($listener);
+
         return $this;
     }
 
@@ -124,11 +146,11 @@ class AppBase
      *
      * @return Array
      */
-    public function handler(string $class, string $method, Array $args, string $traceId, string $clientIp) : Array
+    public function handler(Event\Handler $event) : Array
     {
-        $class = $this->config['rpc']['handler'] . '\\' . ucfirst($class);
-        $keywords = $this->container->getKeywords($class, $method);
-        $instance = $this->container->get($class, $traceId, $keywords['ext']);
+        $class = $this->config['rpc']['handler'] . '\\' . ucfirst($event->getClass());
+        $keywords = $this->container->getKeywords($class, $event->getMethod());
+        $instance = $this->container->get($class, $event->getTraceId(), $keywords['ext']);
         if (!$instance instanceof HandlerAbstract) {
             return array(
                 'err' => sprintf('%s is not extends HandlerAbstract', ucfirst($class)),
@@ -139,7 +161,7 @@ class AppBase
             );
         }
 
-        $instance->setClientIp($clientIp);
+        $instance->setClientIp($event->getClientIP());
 
         if ($keywords['openTransaction']) {
             $keywords['database']->getConnection()->beginTransaction();
@@ -200,14 +222,12 @@ class AppBase
      *
      * @return null
      */
-    public function monitor(Array $data)
+    public function monitor(Event\Monitor $event)
     {
-        Monitor::write($data);
-        if (isset($this->events['monitor'])) {
-            go (function ($data) {
-                call_user_func($this->events['monitor'], $data);
-            }, $data);
-        }
+        Monitor::write($event->getData());
+        go (function ($event) {
+            $this->dispatch->dispatch($event);
+        }, $event);
     }
 
     /**

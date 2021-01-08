@@ -19,6 +19,10 @@ use Kovey\Library\Exception\ProtocolException;
 use Kovey\Logger\Logger;
 use Kovey\Library\Server\PortInterface;
 use Swoole\Server\Port;
+use Kovey\Rpc\Event;
+use Kovey\Event\Dispatch;
+use Kovey\Event\Listener\Listener;
+use Kovey\Event\Listener\ListenerProvider;
 
 class Server implements PortInterface
 {
@@ -48,7 +52,7 @@ class Server implements PortInterface
      *
      * @var Array
      */
-    private Array $events;
+    private Array $onEvents;
 
     /**
      * @description 允许的事件
@@ -64,6 +68,10 @@ class Server implements PortInterface
      */
     private bool $isRunDocker;
 
+    private Dispatch $dispatch;
+
+    private ListenerProvider $provider;
+
     /**
      * @description 构造函数
      *
@@ -75,7 +83,9 @@ class Server implements PortInterface
     {
         $this->conf = $conf;
         $this->isRunDocker = ($this->conf['run_docker'] ?? 'Off') === 'On';
-        $this->events = array();
+        $this->onEvents = array();
+        $this->provider = new ListenerProvider();
+        $this->dispatch = new Dispatch($this->provider);
         $this->initAllowEvents()
             ->initServer()
             ->initCallback()
@@ -104,6 +114,7 @@ class Server implements PortInterface
                 'daemonize' => !$this->isRunDocker,
                 'pid_file' => $this->conf['pid_file'],
                 'log_file' => $this->conf['log_file'],
+                'event_object' => true
             ));
 
             $this->serv->on('connect', array($this, 'connect'));
@@ -121,7 +132,8 @@ class Server implements PortInterface
             'log_file' => $this->conf['log_file'],
             'worker_num' => $this->conf['worker_num'],
             'enable_coroutine' => true,
-            'max_coroutine' => $this->conf['max_co']
+            'max_coroutine' => $this->conf['max_co'],
+            'event_object' => true
         ));
         $this->serv->on('request', array($this, 'request'));
 
@@ -132,6 +144,7 @@ class Server implements PortInterface
             'package_length_type' => ProtocolInterface::PACK_TYPE,
             'package_length_offset' => ProtocolInterface::LENGTH_OFFSET,
             'package_body_offset' => ProtocolInterface::BODY_OFFSET,
+            'event_object' => true
         ));
 
         $port->on('connect', array($this, 'connect'));
@@ -170,13 +183,13 @@ class Server implements PortInterface
     private function initAllowEvents() : Server
     {
         $this->allowEvents = array(
-            'handler' => 1,
-            'pipeMessage' => 1,
-            'initPool' => 1,
-            'monitor' => 1,
-            'run_action' => 1,
-            'unpack' => 1,
-            'pack' => 1
+            'handler' => Event\Handler::class,
+            'pipeMessage' => Event\PipeMessage::class,
+            'initPool' => Event\InitPool::class,
+            'monitor' => Event\Monitor::class,
+            'run_action' => Event\RunAction::class,
+            'unpack' => Event\Unpack::class,
+            'pack' => Event\Pack::class
         );
 
         return $this;
@@ -220,12 +233,9 @@ class Server implements PortInterface
     {
         ko_change_process_name($this->conf['name'] . ' worker');
 
-        if (!isset($this->events['initPool'])) {
-            return;
-        }
-
         try {
-            call_user_func($this->events['initPool'], $this);
+            $event = new Event\InitPool($this);
+            $this->dispatch->dispatch($event);
         } catch (\Throwable $e) {
             Logger::writeExceptionLog(__LINE__, __FILE__, $e);
         }
@@ -234,25 +244,28 @@ class Server implements PortInterface
     /**
      * @description 添加事件
      *
-     * @param string $events
+     * @param string $event
      *
-     * @param callable $cal
+     * @param callable | Array $callback
      *
      * @return PortInterface
      *
      * @throws Exception
      */
-    public function on(string $event, $call) : PortInterface
+    public function on(string $event, callable | Array $callback) : PortInterface
     {
         if (!isset($this->allowEvents[$event])) {
             throw new KoveyException('event: "' . $event . '" is not allow');
         }
 
-        if (!is_callable($call)) {
+        if (!is_callable($callback)) {
             throw new KoveyException('callback is not callable');
         }
 
-        $this->events[$event] = $call;
+        $this->onEvents[$event] = $event;
+        $listener = new Listener();
+        $listener->addEvent($this->allowEvents[$event], $callback);
+        $this->provider->addListener($listener);
         return $this;
     }
 
@@ -267,16 +280,13 @@ class Server implements PortInterface
      *
      * @return null
      */
-    public function pipeMessage($serv, $workerId, $data)
+    public function pipeMessage(\Swoole\Server | \Swoole\Http\Server $serv, \Swoole\Server\PipeMessage $message)
     {
         try {
-            if (!isset($this->events['pipeMessage'])) {
-                return;
-            }
-
-            call_user_func($this->events['pipeMessage'], $data['p'] ?? '', $data['m'] ?? '', $data['a'] ?? array(), $data['t'] ?? '');
+            $event = new Event\PipeMessage($message->data);
+            $this->dispatch->dispatch($event);
         } catch (\Throwable $e) {
-            Logger::writeExceptionLog(__LINE__, __FILE__, $e, $data['t'] ?? '');
+            Logger::writeExceptionLog(__LINE__, __FILE__, $e, $message->data['t'] ?? '');
         }
     }
 
@@ -289,7 +299,7 @@ class Server implements PortInterface
      *
      * @return null
      */
-    public function connect($serv, $fd)
+    public function connect(\Swoole\Server $serv, \Swoole\Server\Event $event)
     {
     }
 
@@ -306,12 +316,12 @@ class Server implements PortInterface
      *
      * @return null
      */
-    public function receive($serv, $fd, $reactor_id, $data)
+    public function receive(\Swoole\Server $serv, \Swoole\Server\Event $event)
     {
         $proto = null;
         try {
-            if (isset($this->events['unpack'])) {
-                $proto = call_user_func($this->events['unpack'], $data, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
+            if (isset($this->onEvents['unpack'])) {
+                $proto = $this->dispatch->dispatchWithReturn(new Event\Unpack($event->data, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes'));
                 if (!$proto instanceof ProtocolInterface) {
                     $this->send(array(
                         'err' => 'parse data error',
@@ -368,7 +378,7 @@ class Server implements PortInterface
     }
 
     /**
-     * @description Hander 处理
+     * @description Handler 处理
      *
      * @param ProtocolInterface $packet
      *
@@ -383,18 +393,7 @@ class Server implements PortInterface
         $result = null;
 
         try {
-            if (!isset($this->events['handler'])) {
-                $this->send(array(
-                    'err' => 'handler events is not register',
-                    'type' => 'kovey_exception',
-                    'code' => 1000,
-                    'trace' => '',
-                    'packet' => $packet->getClear()
-                ), $fd);
-                return;
-            }
-
-            $result = call_user_func($this->events['handler'], $packet->getPath(), $packet->getMethod(), $packet->getArgs(), $packet->getTraceId(), $this->getClientIP($fd));
+            $result = $this->dispatch->dispatch(new Event\Handler($packet, $this->getClientIP($fd)));
             if ($result['code'] > 0) {
                 $result['packet'] = $packet->getClear();
             }
@@ -457,12 +456,8 @@ class Server implements PortInterface
      */
     private function monitor(float $begin, float $end, ProtocolInterface $packet, int $reqTime, Array $result, $fd)
     {
-        if (!isset($this->events['monitor'])) {
-            return;
-        }
-
         try {
-            call_user_func($this->events['monitor'], array(
+            $this->dispatch->dispatch(new Event\Monitor(array(
                 'delay' => round(($end - $begin) * 1000, 2),
                 'request_time' => $begin * 10000,
                 'type' => $result['type'],
@@ -481,7 +476,7 @@ class Server implements PortInterface
                 'traceId' => $packet->getTraceId(),
                 'from' => $packet->getFrom(),
                 'end' => $end * 10000
-            ));
+            )));
         } catch (\Throwable $e) {
             Logger::writeExceptionLog(__LINE__, __FILE__, $e);
         }
@@ -496,19 +491,12 @@ class Server implements PortInterface
      *
      * @return null
      */
-    public function request($request, $response)
+    public function request(\Swoole\Http\Request $request, \Swoole\Http\Response $response)
     {
-        if (!isset($this->events['run_action'])) {
-            $response->status(500);
-            $response->header('content-type', 'text/html');
-            $response->end(ErrorTemplate::getContent(500));
-            return;
-        }
-
         $traceId = hash('sha256', uniqid($request->server['request_uri'], true) . random_int(1000000, 9999999));
         $result = array();
         try {
-            $result = call_user_func($this->events['run_action'], $request, $traceId);
+            $result = $this->dispatch->dispatchWithReturn(new Event\RunAction($request, $traceId));
         } catch (\Throwable $e) {
             Logger::writeExceptionLog(__LINE__, __FILE__, $e, $traceId);
             $result = array(
@@ -554,8 +542,8 @@ class Server implements PortInterface
         }
 
         $data = false;
-        if (isset($this->events['pack'])) {
-            $data = call_user_func($this->events['pack'], $packet, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
+        if (isset($this->onEvents['pack'])) {
+            $data = $this->dispatch->dispatchWithReturn(new Event\Pack($packet, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes'));
         } else {
             $data = Json::pack($packet, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
         }

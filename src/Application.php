@@ -185,18 +185,14 @@ class Application extends AppBase implements AppInterface
      *
      * @return null
      */
-    public function pipeMessage(string $path, string $method, Array $args, string $traceId)
+    public function pipeMessage(Event\PipeMessage $event)
     {
-        if (!isset($this->events['pipeMessage'])) {
-            return;
-        }
-
         try {
-            call_user_func($this->events['pipeMessage'], $path, $method, $args, $traceId);
+            $this->dispatch->dispatch($event);
         } catch (\Exception $e) {
-            Logger::writeExceptionLog(__LINE__, __FILE__, $e, $traceId);
+            Logger::writeExceptionLog(__LINE__, __FILE__, $e, $event->getTraceId());
         } catch (\Throwable $e) {
-            Logger::writeExceptionLog(__LINE__, __FILE__, $e, $traceId);
+            Logger::writeExceptionLog(__LINE__, __FILE__, $e, $event->getTraceId());
         }
     }
 

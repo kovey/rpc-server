@@ -16,13 +16,14 @@ use Kovey\Library\Config\Manager;
 use Kovey\Logger\Logger;
 use Kovey\Logger\Monitor;
 use Kovey\Logger\Db;
-use Kovey\Library\Container\Container;
+use Kovey\Container\Container;
 use Kovey\Rpc\Application;
 use Kovey\Rpc\Server\Server;
 use Kovey\Rpc\Manager\Router\Router;
 use Kovey\Library\Process\UserProcess;
 use Kovey\Rpc\Protocol\Exception;
 use Kovey\Library\Util\Json;
+use Kovey\Rpc\Event;
 
 class Bootstrap
 {
@@ -93,13 +94,13 @@ class Bootstrap
 
     public function __initRunAction(Application $app)
     {
-        $app->serverOn('run_action', function ($request, $traceId) use ($app) {
-            $router = new Router($request->server['path_info'] ?? '/');
-            $instance = $app->getContainer()->get($router->getController(), $traceId);
-            $instance->data = strtolower($request->server['request_method']) === 'get' ? $request->get : $request->post;
+        $app->serverOn('run_action', function (Event\RunAction $event) use ($app) {
+            $router = new Router($event->getRequest()->server['path_info'] ?? '/');
+            $instance = $app->getContainer()->get($router->getController(), $event->getTraceId());
+            $instance->data = strtolower($event->getRequest()->server['request_method']) === 'get' ? $event->getRequest()->get : $event->getRequest()->post;
             if (empty($instance->data)) {
-                if (!empty($request->getContent())) {
-                    $instance->data = Json::decode($request->getContent());
+                if (!empty($event->getRequest()->getContent())) {
+                    $instance->data = Json::decode($event->getRequest()->getContent());
                 }
             }
             try {
@@ -133,5 +134,11 @@ class Bootstrap
                 );
             }
         });
+    }
+
+    public function __initParseInject(Application $app)
+    {
+        $handler = $app->getConfig()['rpc']['handler'];
+        $app->getContainer()->parse(APPLICATION_PATH . '/application/' . $handler, $handler);
     }
 }

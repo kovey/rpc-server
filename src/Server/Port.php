@@ -18,18 +18,106 @@ use Kovey\Library\Exception\BusiException;
 use Kovey\Library\Exception\KoveyException;
 use Kovey\Library\Exception\ProtocolException;
 use Kovey\Logger\Logger;
+use Kovey\Rpc\Event;
+use Kovey\Event\Dispatch;
+use Kovey\Event\Listener\Listener;
+use Kovey\Event\Listener\ListenerProvider;
 
 class Port extends Base
 {
+    const TCP_PORT = 1;
+
+    /**
+     * @description 服务器
+     *
+     * @var Swoole\Server
+     */
+    protected \Swoole\Server $serv;
+
+    /**
+     * @description 端口
+     *
+     * @var Swoole\Server\Port
+     */
+    protected \Swoole\Server\Port $port;
+
+    /**
+     * @description 监听的事件
+     *
+     * @var Array
+     */
+    protected Array $onEvents;
+
+    /**
+     * @description 配置
+     *
+     * @var Array
+     */
+    protected Array $conf;
+    
     /**
      * @description 允许监听的事件
      */
     protected Array $allowEvents = array(
-        'monitor' => 1,
-        'handler' => 1,
-        'unpack' => 1,
-        'pack' => 1
+        'monitor' => Event\Monitor::class,
+        'handler' => Event\Handler::class,
+        'unpack' => Event\Unpack::class,
+        'pack' => Event\Pack::class
     );
+
+    private Dispatch $dispatch;
+
+    private ListenerProvider $provider;
+
+    /**
+     * @description 构造
+     *
+     * @param Server $serv
+     *
+     * @param Array $conf
+     *
+     * @param int $type
+     *
+     * @return Base
+     */
+    final public function __construct(Server $serv, Array $conf, int $type = self::TCP_PORT)
+    {
+        $this->serv = $serv;
+        $this->port = $this->serv->listen($conf['host'], $conf['port'], $type == self::TCP_PORT ? SWOOLE_SOCK_TCP : SWOOLE_SOCK_UDP);
+        $this->onEvents = array();
+        $this->conf = $conf;
+        $this->provider = new ListenerProvider();
+        $this->dispatch = new Dispatch($this->provider);
+        $this->init();
+    }
+
+    /**
+     * @description 事件监听
+     *
+     * @param string $event
+     *
+     * @param callable $callable
+     *
+     * @return PortInterface
+     *
+     * @return throws
+     */
+    public function on(string $event, callable | Array $callable) : PortInterface
+    {
+        if (!$this->isAllow($event)) {
+            throw new KoveyException('unknown event: ' . $event);
+        }
+
+        if (!is_callable($callable)) {
+            throw new KoveyException('callback can not callable');
+        }
+
+        $listener = new Listener();
+        $listener->addEvent($this->allowEvents[$event], $callable);
+        $this->provider->addListener($listener);
+        $this->onEvents[$event] = $event;
+        return $this;
+    }
 
     /**
      * @description 初始化
@@ -44,6 +132,7 @@ class Port extends Base
             'package_length_type' => ProtocolInterface::PACK_TYPE,
             'package_length_offset' => ProtocolInterface::LENGTH_OFFSET,
             'package_body_offset' => ProtocolInterface::BODY_OFFSET,
+            'event_object' => true
         ));
 
         $this->port->on('connect', array($this, 'connect'));
@@ -72,7 +161,7 @@ class Port extends Base
      *
      * @return null
      */
-    public function connect($serv, $fd)
+    public function connect(\Swoole\Server $serv, \Swoole\Server\Event $event)
     {
     }
 
@@ -89,12 +178,12 @@ class Port extends Base
      *
      * @return null
      */
-    public function receive($serv, $fd, $reactor_id, $data)
+    public function receive(\Swoole\Server $serv, \Swoole\Server\Event $event)
     {
         $proto = null;
         try {
-            if (isset($this->events['unpack'])) {
-                $proto = call_user_func($this->events['unpack'], $data, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
+            if (isset($this->onEvents['unpack'])) {
+                $proto = $this->dispatch->dispatchWithReturn(new Event\Unpack($event->data, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes'));
                 if (!$proto instanceof ProtocolInterface) {
                     $this->send(array(
                         'err' => 'parse data error',
@@ -166,18 +255,8 @@ class Port extends Base
         $result = null;
 
         try {
-            if (!isset($this->events['handler'])) {
-                $this->send(array(
-                    'err' => 'handler events is not register',
-                    'type' => 'exception',
-                    'code' => 1000,
-                    'trace' => '',
-                    'packet' => $packet->getClear()
-                ), $fd);
-                return;
-            }
-
-            $result = call_user_func($this->events['handler'], $packet->getPath(), $packet->getMethod(), $packet->getArgs(), $packet->getTraceId(), $this->getClientIP($fd));
+            $event = new Event\Handler($packet, $this->getClientIP($fd));
+            $result = $this->dispatch->dispatchWithReturn($event);
             if ($result['code'] > 0) {
                 $result['packet'] = $packet->getClear();
             }
@@ -236,12 +315,8 @@ class Port extends Base
      */
     private function monitor(float $begin, float $end, ProtocolInterface $packet, int $reqTime, Array $result, $fd)
     {
-        if (!isset($this->events['monitor'])) {
-            return;
-        }
-
         try {
-            call_user_func($this->events['monitor'], array(
+            $event = new Event\Monitor(array(
                 'delay' => round(($end - $begin) * 1000, 2),
                 'request_time' => $begin * 10000,
                 'type' => $result['type'],
@@ -261,6 +336,7 @@ class Port extends Base
                 'from' => $packet->getFrom(),
                 'end' => $end * 10000
             ));
+            $this->dispatch->dispatch($event);
         } catch (\Throwable $e) {
             Logger::writeExceptionLog(__LINE__, __FILE__, $e);
         }
@@ -282,8 +358,9 @@ class Port extends Base
         }
 
         $data = false;
-        if (isset($this->events['pack'])) {
-            $data = call_user_func($this->events['pack'], $packet, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
+        if (isset($this->onEvents['pack'])) {
+            $event = new Event\Pack($packet, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
+            $data = $this->dispatch->dispatchWithReturn($event);
         } else {
             $data = Json::pack($packet, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
         }
