@@ -31,7 +31,7 @@ class RunAction implements EventInterface
         return $this->request;
     }
 
-    public function getTraceId() : Array
+    public function getTraceId() : string
     {
         return $this->packet->getTraceId();
     }
