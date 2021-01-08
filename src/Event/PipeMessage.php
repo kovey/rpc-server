@@ -44,7 +44,7 @@ class PipeMessage implements EventInterface
 
     public function getPath() : string
     {
-        return $this->data['t'] ?? '';
+        return $this->data['p'] ?? '';
     }
 
     public function getMethod() : string

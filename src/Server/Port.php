@@ -17,13 +17,14 @@ use Kovey\Rpc\Protocol\Json;
 use Kovey\Library\Exception\BusiException;
 use Kovey\Library\Exception\KoveyException;
 use Kovey\Library\Exception\ProtocolException;
+use Kovey\Library\Server\PortInterface;
 use Kovey\Logger\Logger;
 use Kovey\Rpc\Event;
 use Kovey\Event\Dispatch;
 use Kovey\Event\Listener\Listener;
 use Kovey\Event\Listener\ListenerProvider;
 
-class Port extends Base
+class Port implements PortInterface
 {
     const TCP_PORT = 1;
 
@@ -80,7 +81,7 @@ class Port extends Base
      *
      * @return Base
      */
-    final public function __construct(Server $serv, Array $conf, int $type = self::TCP_PORT)
+    final public function __construct(\Swoole\Server $serv, Array $conf, int $type = self::TCP_PORT)
     {
         $this->serv = $serv;
         $this->port = $this->serv->listen($conf['host'], $conf['port'], $type == self::TCP_PORT ? SWOOLE_SOCK_TCP : SWOOLE_SOCK_UDP);
@@ -170,11 +171,7 @@ class Port extends Base
      *
      * @param Swoole\Server $serv
      *
-     * @param int $fd
-     *
-     * @param int $reactor_id
-     *
-     * @param mixed $data
+     * @param Swoole\Server\Event $event
      *
      * @return null
      */
@@ -190,13 +187,13 @@ class Port extends Base
                         'type' => 'exception',
                         'trace' => '',
                         'code' => 1000,
-                        'packet' => $data
-                    ), $fd);
-                    $serv->close($fd);
+                        'packet' => $event->data
+                    ), $event->fd);
+                    $serv->close($event->fd);
                     return;
                 }
             } else {
-                $proto = new Json($data, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
+                $proto = new Json($event->data, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
             }
 
             if (!$proto->parse()) {
@@ -205,9 +202,9 @@ class Port extends Base
                     'type' => 'exception',
                     'trace' => '',
                     'code' => 1000,
-                    'packet' => $data
-                ), $fd);
-                $serv->close($fd);
+                    'packet' => $event->data
+                ), $event->fd);
+                $serv->close($event->fd);
                 return;
             }
         } catch (ProtocolException $e) {
@@ -216,9 +213,9 @@ class Port extends Base
                 'type' => 'protocol_exception',
                 'trace' => $e->getTraceAsString(),
                 'code' => $e->getCode(),
-                'packet' => $data
-            ), $fd);
-            $serv->close($fd);
+                'packet' => $event->data
+            ), $event->fd);
+            $serv->close($event->fd);
             Logger::writeExceptionLog(__LINE__, __FILE__, $e);
             return;
         } catch (KoveyException $e) {
@@ -227,16 +224,16 @@ class Port extends Base
                 'type' => 'kovey_exception',
                 'trace' => $e->getTraceAsString(),
                 'code' => $e->getCode(),
-                'packet' => $data
-            ), $fd);
-            $serv->close($fd);
+                'packet' => $event->data
+            ), $event->fd);
+            $serv->close($event->fd);
             Logger::writeExceptionLog(__LINE__, __FILE__, $e);
             return;
         }
 
-        $this->handler($proto, $fd);
+        $this->handler($proto, $event->fd);
 
-        $serv->close($fd);
+        $serv->close($event->fd);
     }
 
     /**

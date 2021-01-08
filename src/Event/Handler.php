@@ -41,7 +41,7 @@ class Handler implements EventInterface
         return $this->packet->getArgs();
     }
 
-    public function getTraceId() : Array
+    public function getTraceId() : string
     {
         return $this->packet->getTraceId();
     }

@@ -134,15 +134,7 @@ class AppBase
     /**
      * @description handler业务
      *
-     * @param string $class
-     *
-     * @param string $method
-     *
-     * @param Array $args
-     *
-     * @param string $traceId
-     *
-     * @param string $clientIp
+     * @param Event\Handler $event
      *
      * @return Array
      */
@@ -166,14 +158,14 @@ class AppBase
         if ($keywords['openTransaction']) {
             $keywords['database']->getConnection()->beginTransaction();
             try {
-                $result = call_user_func(array($instance, $method), ...$args);
+                $result = call_user_func(array($instance, $event->getMethod()), ...$event->getArgs());
                 $keywords['database']->getConnection()->commit();
             } catch (\Throwable $e) {
                 $keywords['database']->getConnection()->rollBack();
                 throw $e;
             }
         } else {
-            $result = call_user_func(array($instance, $method), ...$args);
+            $result = call_user_func(array($instance, $event->getMethod()), ...$event->getArgs());
         }
 
         return array(

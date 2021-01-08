@@ -274,9 +274,7 @@ class Server implements PortInterface
      *
      * @param Swoole\Server $serv
      *
-     * @param int $workerId
-     *
-     * @param mixed $data
+     * @param Swoole\Server\PipeMessage $message
      *
      * @return null
      */
@@ -308,11 +306,7 @@ class Server implements PortInterface
      *
      * @param Swoole\Server $serv
      *
-     * @param int $fd
-     *
-     * @param int $reactor_id
-     *
-     * @param mixed $data
+     * @param Swoole\Server\Event $event
      *
      * @return null
      */
@@ -328,13 +322,13 @@ class Server implements PortInterface
                         'type' => 'exception',
                         'trace' => '',
                         'code' => 1000,
-                        'packet' => $data
-                    ), $fd);
-                    $serv->close($fd);
+                        'packet' => $event->data
+                    ), $event->fd);
+                    $serv->close($event->fd);
                     return;
                 }
             } else {
-                $proto = new Json($data, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
+                $proto = new Json($event->data, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
             }
 
             if (!$proto->parse()) {
@@ -343,9 +337,9 @@ class Server implements PortInterface
                     'type' => 'exception',
                     'trace' => '',
                     'code' => 1000,
-                    'packet' => $data
-                ), $fd);
-                $serv->close($fd);
+                    'packet' => $event->data
+                ), $event->fd);
+                $serv->close($event->fd);
                 return;
             }
         } catch (ProtocolException $e) {
@@ -354,9 +348,9 @@ class Server implements PortInterface
                 'type' => 'protocol_exception',
                 'trace' => $e->getTraceAsString(),
                 'code' => $e->getCode(),
-                'packet' => $data
-            ), $fd);
-            $serv->close($fd);
+                'packet' => $event->data
+            ), $event->fd);
+            $serv->close($event->fd);
             Logger::writeExceptionLog(__LINE__, __FILE__, $e);
             return;
         } catch (KoveyException $e) {
@@ -365,16 +359,16 @@ class Server implements PortInterface
                 'type' => 'kovey_exception',
                 'trace' => $e->getTraceAsString(),
                 'code' => $e->getCode(),
-                'packet' => $data
-            ), $fd);
-            $serv->close($fd);
+                'packet' => $event->data
+            ), $event->fd);
+            $serv->close($event->fd);
             Logger::writeExceptionLog(__LINE__, __FILE__, $e);
             return;
         }
 
-        $this->handler($proto, $fd);
+        $this->handler($proto, $event->fd);
 
-        $serv->close($fd);
+        $serv->close($event->fd);
     }
 
     /**

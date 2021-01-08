@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
 use Kovey\Rpc\Protocol\Json;
 use Kovey\Rpc\Event;
 
-class PortTest extends TestCase
+class ServerTest extends TestCase
 {
     protected $server;
 

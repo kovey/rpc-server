@@ -14,13 +14,14 @@ namespace Kovey\Rpc;
 use PHPUnit\Framework\TestCase;
 use Kovey\Rpc\App\Bootstrap\Autoload;
 use Kovey\Rpc\Server\Server;
-use Kovey\Library\Container\Container;
-use Kovey\Library\Container\ContainerInterface;
+use Kovey\Container\Container;
+use Kovey\Container\ContainerInterface;
 use Kovey\Library\Process\UserProcess;
 use Kovey\Connection\Pool\Mysql;
 use Kovey\Connection\Pool\PoolInterface;
 use Kovey\Db\Adapter;
 use Kovey\Library\Config\Manager;
+use Kovey\Rpc\Event;
 
 class ApplicationTest extends TestCase
 {
@@ -56,13 +57,14 @@ class ApplicationTest extends TestCase
 
     public function testRegisterPipeMessage()
     {
-        Application::getInstance()->on('pipeMessage', function (string $path, string $method, Array $args) {
-            $this->assertEquals('path', $path);
-            $this->assertEquals('method', $method);
-            $this->assertEquals(array('path', 'method'), $args);
+        Application::getInstance()->on('pipeMessage', function (Event\PipeMessage $event) {
+            $this->assertEquals('path', $event->getPath());
+            $this->assertEquals('method', $event->getMethod());
+            $this->assertEquals(array('path', 'method'), $event->getArgs());
+            $this->assertEquals(hash('sha256', '123456'), $event->getTraceId());
         });
 
-        Application::getInstance()->pipeMessage('path', 'method', array('path', 'method'));
+        Application::getInstance()->pipeMessage(new Event\PipeMessage(array('p' => 'path', 'm' => 'method', 'a' => array('path', 'method'), 't' => hash('sha256', '123456'))));
     }
 
     public function testRegisterContainer()

@@ -24,7 +24,7 @@ class JsonTest extends TestCase
             'time' => time()
         );
 
-        $key = md5('123456');
+        $key = 'U0ZLf0s8NQgggMrBi16KDeUyPBgzLPWALhohHKRRyxK';
 
         $encrypt = Json::pack($data, $key);
         $this->assertTrue(!empty($encrypt));

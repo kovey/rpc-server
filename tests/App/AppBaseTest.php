@@ -13,7 +13,9 @@ namespace Kovey\Rpc\App;
 
 use PHPUnit\Framework\TestCase;
 use Kovey\Rpc\App\Bootstrap\Autoload;
-use Kovey\Library\Container\Container;
+use Kovey\Container\Container;
+use Kovey\Rpc\Event;
+use Kovey\Rpc\Protocol\Json;
 
 class AppBaseTest extends TestCase
 {
@@ -32,6 +34,16 @@ class AppBaseTest extends TestCase
 
     public function testHandler()
     {
+        $packet = $this->createMock(Json::class);
+        $packet->method('getPath')
+               ->willReturn('kovey');
+        $packet->method('getMethod')
+               ->willReturn('framework');
+        $packet->method('getArgs')
+               ->willReturn(array('name'));
+        $packet->method('getTraceId')
+               ->willReturn(hash('sha256', 123456));
+
         $autoload = new Autoload();
         $autoload->register();
         $base = new AppBase();
@@ -49,12 +61,22 @@ class AppBaseTest extends TestCase
             'err' => '',
             'type' => 'success',
             'code' => 0,
-            'result' => 'name'
-        ), $base->handler('kovey', 'framework', array('name'), hash('sha256', 123456)));
+            'result' => 'name',
+            'trace' => '' 
+        ), $base->handler(new Event\Handler($packet, '127.0.0.1')));
     }
     
     public function testHandlerFailure()
     {
+        $packet = $this->createMock(Json::class);
+        $packet->method('getPath')
+               ->willReturn('framework');
+        $packet->method('getMethod')
+               ->willReturn('framework');
+        $packet->method('getArgs')
+               ->willReturn(array('name'));
+        $packet->method('getTraceId')
+               ->willReturn(hash('sha256', 123456));
         $autoload = new Autoload();
         $autoload->register();
         $base = new AppBase();
@@ -69,9 +91,11 @@ class AppBaseTest extends TestCase
             )
         ));
         $this->assertEquals(array(
-            'err' => 'Framework is not extends HandlerAbstract',
+            'err' => 'Handler\Framework is not extends HandlerAbstract',
             'type' => 'exception',
             'code' => 1,
-        ), $base->handler('Framework', 'framework', array('name'), hash('sha256', 123456)));
+            'trace' => '',
+            'result' => null
+        ), $base->handler(new Event\Handler($packet, '127.0.0.1')));
     }
 }
