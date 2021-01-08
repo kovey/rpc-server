@@ -33,7 +33,7 @@ class RunAction implements EventInterface
 
     public function getTraceId() : string
     {
-        return $this->packet->getTraceId();
+        return $this->traceId;
     }
 
     /**
