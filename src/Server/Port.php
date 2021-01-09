@@ -226,14 +226,22 @@ class Port implements PortInterface
                 'code' => $e->getCode(),
                 'packet' => $event->data
             ), $event->fd);
+            Logger::writeExceptionLog(__LINE__, __FILE__, $e);
+            return;
+        } catch (\Throwable $e) {
+            $this->send(array(
+                'err' => $e->getMessage(),
+                'type' => 'fatal_error_exception',
+                'trace' => $e->getTraceAsString(),
+                'code' => $e->getCode(),
+                'packet' => $event->data
+            ), $event->fd);
             $serv->close($event->fd);
             Logger::writeExceptionLog(__LINE__, __FILE__, $e);
             return;
         }
 
         $this->handler($proto, $event->fd);
-
-        $serv->close($event->fd);
     }
 
     /**

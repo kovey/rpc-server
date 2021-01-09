@@ -203,7 +203,7 @@ class Application extends AppBase implements AppInterface
      *
      * @return null
      */
-    public function initPool(Server $serv)
+    public function initPool(Event\InitPool $event)
     {
         try {
             foreach ($this->pools as $pool) {

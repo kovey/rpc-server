@@ -62,6 +62,7 @@ class AppBase
 
     protected static Array $events = array(
         'pipeMessage' => Event\PipeMessage::class,
+        'monitor' => Event\Monitor::class,
     );
 
     protected Dispatch $dispatch;
