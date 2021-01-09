@@ -122,6 +122,7 @@ class Server implements PortInterface
             $this->serv->on('connect', array($this, 'connect'));
             $this->serv->on('receive', array($this, 'receive'));
             $this->serv->on('close', array($this, 'close'));
+            $this->serv->on('workerError', array($this, 'workerError'));
             return $this;
         }
 
@@ -140,6 +141,7 @@ class Server implements PortInterface
             'log_date_format' => '%Y-%m-%d %H:%M:%S'
         ));
         $this->serv->on('request', array($this, 'request'));
+        $this->serv->on('workerError', array($this, 'workerError'));
 
         $port = $this->serv->listen($this->conf['host'], $this->conf['port'], SWOOLE_SOCK_TCP);
         $port->set(array(
@@ -243,6 +245,11 @@ class Server implements PortInterface
         } catch (\Throwable $e) {
             Logger::writeExceptionLog(__LINE__, __FILE__, $e);
         }
+    }
+
+    public function workerError(\Swoole\Http\Server $serv, \Swoole\Server\StatusInfo $info)
+    {
+        Logger::writeWarningLogSync(__LINE__, __FILE__, json_encode($info));
     }
 
     /**
