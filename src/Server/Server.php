@@ -114,7 +114,9 @@ class Server implements PortInterface
                 'daemonize' => !$this->isRunDocker,
                 'pid_file' => $this->conf['pid_file'],
                 'log_file' => $this->conf['log_file'],
-                'event_object' => true
+                'event_object' => true,
+                'log_rotation' => SWOOLE_LOG_ROTATION_DAILY,
+                'log_date_format' => '%Y-%m-%d %H:%M:%S'
             ));
 
             $this->serv->on('connect', array($this, 'connect'));
@@ -133,7 +135,9 @@ class Server implements PortInterface
             'worker_num' => $this->conf['worker_num'],
             'enable_coroutine' => true,
             'max_coroutine' => $this->conf['max_co'],
-            'event_object' => true
+            'event_object' => true,
+            'log_rotation' => SWOOLE_LOG_ROTATION_DAILY,
+            'log_date_format' => '%Y-%m-%d %H:%M:%S'
         ));
         $this->serv->on('request', array($this, 'request'));
 
