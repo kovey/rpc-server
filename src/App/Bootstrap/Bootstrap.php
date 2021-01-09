@@ -138,6 +138,8 @@ class Bootstrap
 
     public function __initParseInject(Application $app)
     {
+        $app->registerLocalLibPath(APPLICATION_PATH . '/application');
+
         $handler = $app->getConfig()['rpc']['handler'];
         $app->getContainer()->parse(APPLICATION_PATH . '/application/' . $handler, $handler);
     }
