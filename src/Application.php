@@ -239,10 +239,7 @@ class Application extends AppBase implements AppInterface
     {
         $fields = array(
             'server' => array(
-                'host', 'port', 'log_file', 'pid_file'    , 'secret_key'
-            ), 
-            'logger' => array(
-                'info', 'exception', 'error', 'warning'
+                'host', 'port', 'logger_dir', 'pid_file', 'secret_key'
             ), 
             'rpc' => array(
                 'name', 'handler'
