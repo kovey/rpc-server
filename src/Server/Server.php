@@ -87,9 +87,9 @@ class Server implements PortInterface
         $this->provider = new ListenerProvider();
         $this->dispatch = new Dispatch($this->provider);
         $this->initAllowEvents()
+            ->initLog()
             ->initServer()
-            ->initCallback()
-            ->initLog();
+            ->initCallback();
 
     }
 
