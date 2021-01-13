@@ -11,11 +11,11 @@
  */
 namespace Kovey\Rpc;
 
-use Kovey\Library\Process\ProcessAbstract;
+use Kovey\Process\ProcessAbstract;
 use Kovey\Connection\Pool\PoolInterface;
 use Kovey\Library\Server\PortInterface;
 use Kovey\Rpc\Server\Server;
-use Kovey\Library\Process\UserProcess;
+use Kovey\Process\UserProcess;
 use Kovey\Logger\Logger;
 use Kovey\Library\Exception\KoveyException;
 use Kovey\Rpc\App\AppBase;
@@ -47,7 +47,7 @@ class Application extends AppBase implements AppInterface
     /**
      * @description 用户自定义进程
      *
-     * @var Kovey\Components\Process\UserProcess
+     * @var Kovey\Process\UserProcess
      */
     private UserProcess $userProcess;
 

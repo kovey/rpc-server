@@ -11,7 +11,7 @@
  */
 namespace Kovey\Rpc\App\Bootstrap;
 
-use Kovey\Library\Process;
+use Kovey\Process\Process;
 use Kovey\Library\Config\Manager;
 use Kovey\Logger\Logger;
 use Kovey\Logger\Monitor;
@@ -20,7 +20,7 @@ use Kovey\Container\Container;
 use Kovey\Rpc\Application;
 use Kovey\Rpc\Server\Server;
 use Kovey\Rpc\Manager\Router\Router;
-use Kovey\Library\Process\UserProcess;
+use Kovey\Process\UserProcess;
 use Kovey\Rpc\Protocol\Exception;
 use Kovey\Library\Util\Json;
 use Kovey\Rpc\Event;
@@ -37,13 +37,10 @@ class Bootstrap
     public function __initLogger(Application $app)
     {
         ko_change_process_name(Manager::get('server.rpc.name') . ' rpc root');
-        Logger::setLogPath(
-            Manager::get('server.logger.info'), Manager::get('server.logger.exception'), Manager::get('server.logger.error'), 
-            Manager::get('server.logger.warning'), Manager::get('server.logger.busi_exception')
-        );
+        Logger::setLogPath(Manager::get('server.server.logger_dir'));
         Logger::setCategory(Manager::get('server.rpc.name'));
-        Db::setLogDir(Manager::get('server.logger.db'));
-        Monitor::setLogDir(Manager::get('server.logger.monitor'));
+        Db::setLogDir(Manager::get('server.server.logger_dir'));
+        Monitor::setLogDir(Manager::get('server.server.logger_dir'));
     }
 
     /**
