@@ -1,6 +1,6 @@
 <?php
 /**
- * @description Rpc服务端口
+ * @description Rpc Port
  *
  * @package
  *
@@ -29,35 +29,37 @@ class Port implements PortInterface
     const TCP_PORT = 1;
 
     /**
-     * @description 服务器
+     * @description Server
      *
      * @var Swoole\Server
      */
     protected \Swoole\Server $serv;
 
     /**
-     * @description 端口
+     * @description Port
      *
      * @var Swoole\Server\Port
      */
     protected \Swoole\Server\Port $port;
 
     /**
-     * @description 监听的事件
+     * @description events listened
      *
      * @var Array
      */
     protected Array $onEvents;
 
     /**
-     * @description 配置
+     * @description config
      *
      * @var Array
      */
     protected Array $conf;
     
     /**
-     * @description 允许监听的事件
+     * @description events support
+     *
+     * @var array
      */
     protected Array $allowEvents = array(
         'monitor' => Event\Monitor::class,
@@ -66,12 +68,22 @@ class Port implements PortInterface
         'pack' => Event\Pack::class
     );
 
+    /**
+     * @description event dispatcher
+     *
+     * @var Dispatch
+     */
     private Dispatch $dispatch;
 
+    /**
+     * @description event listener provider
+     *
+     * @var ListenerProvider
+     */
     private ListenerProvider $provider;
 
     /**
-     * @description 构造
+     * @description construct
      *
      * @param Server $serv
      *
@@ -93,7 +105,7 @@ class Port implements PortInterface
     }
 
     /**
-     * @description 事件监听
+     * @description event listen
      *
      * @param string $event
      *
@@ -121,11 +133,11 @@ class Port implements PortInterface
     }
 
     /**
-     * @description 初始化
+     * @description init
      *
-     * @return mixed
+     * @return void
      */
-    protected function init()
+    protected function init() : void
     {
         $this->port->set(array(
             'open_length_check' => true,
@@ -142,7 +154,7 @@ class Port implements PortInterface
     }
 
     /**
-     * @description 是否允许监听事件
+     * @description event is support ?
      *
      * @param string $event
      *
@@ -154,28 +166,28 @@ class Port implements PortInterface
     }
 
     /**
-     * @description 链接回调
+     * @description connect callback
      *
      * @param Swoole\Server $serv
      *
      * @param int $fd
      *
-     * @return null
+     * @return void
      */
-    public function connect(\Swoole\Server $serv, \Swoole\Server\Event $event)
+    public function connect(\Swoole\Server $serv, \Swoole\Server\Event $event) : void
     {
     }
 
     /**
-     * @description 接收回调
+     * @description receive callback
      *
      * @param Swoole\Server $serv
      *
      * @param Swoole\Server\Event $event
      *
-     * @return null
+     * @return void
      */
-    public function receive(\Swoole\Server $serv, \Swoole\Server\Event $event)
+    public function receive(\Swoole\Server $serv, \Swoole\Server\Event $event) : void
     {
         $proto = null;
         try {
@@ -245,15 +257,15 @@ class Port implements PortInterface
     }
 
     /**
-     * @description Hander 处理
+     * @description Handler process
      *
      * @param ProtocolInterface $packet
      *
      * @param int $fd
      *
-     * @return null
+     * @return void
      */
-    private function handler(ProtocolInterface $packet, $fd)
+    private function handler(ProtocolInterface $packet, $fd) : void
     {
         $begin = microtime(true);
         $reqTime = time();
@@ -302,7 +314,7 @@ class Port implements PortInterface
     }
 
     /**
-     * @description 监控
+     * @description monitor
      *
      * @param float $begin
      *
@@ -316,9 +328,9 @@ class Port implements PortInterface
      *
      * @param int $fd
      *
-     * @return null
+     * @return void
      */
-    private function monitor(float $begin, float $end, ProtocolInterface $packet, int $reqTime, Array $result, $fd)
+    private function monitor(float $begin, float $end, ProtocolInterface $packet, int $reqTime, Array $result, $fd) : void
     {
         try {
             $event = new Event\Monitor(array(
@@ -348,7 +360,7 @@ class Port implements PortInterface
     }
 
     /**
-     * @description 发送数据
+     * @description send data to client
      *
      * @param Array $packet
      *
@@ -389,15 +401,15 @@ class Port implements PortInterface
     }
 
     /**
-     * @description 关闭链接
+     * @description close connection
      *
      * @param Swoole\Server $serv
      *
      * @param int $fd
      *
-     * @return null
+     * @return void
      */
-    public function close($serv, $fd)
+    public function close($serv, $fd) : void
     {
     }
 

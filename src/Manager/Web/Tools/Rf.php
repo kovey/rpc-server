@@ -1,6 +1,6 @@
 <?php
 /**
- * @description 反射类
+ * @description reflection
  *
  * @package Kovey\Rpc\Manager\Web\Tools
  *
@@ -14,9 +14,9 @@ namespace Kovey\Rpc\Manager\Web\Tools;
 class Rf
 {
     /**
-     * @description 获取接口信息和注视
+     * @description get interface info
      *
-     * @param mixed $class
+     * @param string $class
      *
      * @return Array
      */

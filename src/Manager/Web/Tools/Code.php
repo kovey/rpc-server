@@ -1,6 +1,6 @@
 <?php
 /**
- * @description 打印类型
+ * @description type var dump
  *
  * @package Kovey\Rpc\Manager\Web\Tools
  *
@@ -14,7 +14,7 @@ namespace Kovey\Rpc\Manager\Web\Tools;
 class Code
 {
     /**
-     * @description 打印
+     * @description print
      *
      * @param array ...$params
      *
@@ -31,7 +31,7 @@ class Code
     }
 
     /**
-     * @description 打印单个变量
+     * @description print single variable
      *
      * @param $param
      *
@@ -64,7 +64,7 @@ class Code
     }
 
     /**
-     * @description 打印数组
+     * @description print array
      *
      * @param $param
      *
@@ -72,7 +72,7 @@ class Code
      *
      * @return string
      */
-    public static function dumpArray($param, int $i = 0) : string
+    public static function dumpArray(Array $param, int $i = 0) : string
     {
         $result = '<p>array('.count($param).') {</p>';
         foreach ($param as $key => $item) {
@@ -84,7 +84,7 @@ class Code
     }
 
     /**
-     * @description 打印对象
+     * @description print object
      *
      * @param $param
      *
@@ -92,7 +92,7 @@ class Code
      *
      * @return string
      */
-    public static function dumpObject($param, int $i = 0) : string
+    public static function dumpObject(mixed $param, int $i = 0) : string
     {
         $rf = new \ReflectionClass($param);
         $vars = $rf->getProperties();
@@ -108,13 +108,13 @@ class Code
     }
 
     /**
-     * @description 获取对象属性类型
+     * @description get object attributes
      *
-     * @param mixed $obj
+     * @param ReflectionProperty $obj
      *
      * @return string
      */
-    private static function getType($obj) : string
+    private static function getType(\ReflectionProperty $obj) : string
     {
         $static = $obj->isStatic() ? 'static:' : '';
 

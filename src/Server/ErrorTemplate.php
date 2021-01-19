@@ -1,7 +1,6 @@
 <?php
 /**
- *
- * @description HTTP 错误码
+ * @description http code error
  *
  * @package     
  *

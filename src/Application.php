@@ -1,7 +1,6 @@
 <?php
 /**
- *
- * @description RPC应用全局大对象
+ * @description Global App
  *
  * @package     Kovey\Rpc
  *
@@ -24,49 +23,49 @@ use Kovey\Connection\AppInterface;
 class Application extends AppBase implements AppInterface
 {
     /**
-     * @description Application 实例
+     * @description Application instance
      *
      * @var Application
      */
     private static Application $instance;
 
     /**
-     * @description 启动处理
+     * @description bootstrap before app start
      *
      * @var Kovey\Rpc\Bootstrap\Bootstrap
      */
     private $bootstrap;
 
     /**
-     * @description 自定义启动
+     * @description custom bootstrap
      *
      * @var mixed
      */
     private $customBootstrap;
 
     /**
-     * @description 用户自定义进程
+     * @description user custom process
      *
      * @var Kovey\Process\UserProcess
      */
     private UserProcess $userProcess;
 
     /**
-     * @description 连接池
+     * @description connection pool
      *
      * @var Array
      */
     private Array $pools;
 
     /**
-     * @description 全局变量
+     * @description global veriable
      *
      * @var Array
      */
     private Array $globals;
 
     /**
-     * @description 构造函数
+     * @description construct
      *
      * @return Application
      */
@@ -81,7 +80,7 @@ class Application extends AppBase implements AppInterface
     {}
 
     /**
-     * @description 获取Application 的实例
+     * @description get instance
      *
      * @return Application
      */
@@ -95,7 +94,7 @@ class Application extends AppBase implements AppInterface
     }
 
     /**
-     * @description 注册全局变量
+     * @description register global veriable
      *
      * @param string $name
      *
@@ -110,19 +109,19 @@ class Application extends AppBase implements AppInterface
     }
 
     /**
-     * @description 获取全局变量
+     * @description get global
      *
      * @param string $name
      *
      * @return mixed
      */
-    public function getGlobal(string $name)
+    public function getGlobal(string $name) : mixed
     {
         return $this->globals[$name] ?? null;
     }
 
     /**
-     * @description 启动处理
+     * @description bootstrap
      *
      * @return Application
      */
@@ -154,7 +153,7 @@ class Application extends AppBase implements AppInterface
     }
 
     /**
-     * @description 注册服务端
+     * @description register server
      *
      * @param PortInterface $server
      *
@@ -173,7 +172,7 @@ class Application extends AppBase implements AppInterface
     }
 
     /**
-     * @description 进程间通信
+     * @description pipe message event
      *
      * @param string $path
      *
@@ -183,9 +182,9 @@ class Application extends AppBase implements AppInterface
      *
      * @param string $traceId
      *
-     * @return null
+     * @return void
      */
-    public function pipeMessage(Event\PipeMessage $event)
+    public function pipeMessage(Event\PipeMessage $event) : void
     {
         try {
             $this->dispatch->dispatch($event);
@@ -197,13 +196,13 @@ class Application extends AppBase implements AppInterface
     }
 
     /**
-     * @description 初始化连接池
+     * @description init pool event
      *
-     * @param Swoole\Server
+     * @param Event\InitPool
      *
-     * @return null
+     * @return void
      */
-    public function initPool(Event\InitPool $event)
+    public function initPool(Event\InitPool $event) : void
     {
         try {
             foreach ($this->pools as $pool) {
@@ -229,7 +228,7 @@ class Application extends AppBase implements AppInterface
     }
 
     /**
-     * @description 检测配置
+     * @description check config
      *
      * @return Application
      *
@@ -262,33 +261,33 @@ class Application extends AppBase implements AppInterface
     }
 
     /**
-     * @description 注册启动处理类
+     * @description register bootstrap
      *
      * @param mixed Bootstrap
      *
      * @return Application
      */
-    public function registerBootstrap($bootstrap) : Application
+    public function registerBootstrap(mixed $bootstrap) : Application
     {
         $this->bootstrap = $bootstrap;
         return $this;
     }
 
     /**
-     * @description 注册自定义的启动处理类
+     * @description registerPool custom bootstrap
      *
      * @param mixed Bootstrap
      *
      * @return Application
      */
-    public function registerCustomBootstrap($bootstrap) : Application
+    public function registerCustomBootstrap(mixed $bootstrap) : Application
     {
         $this->customBootstrap = $bootstrap;
         return $this;
     }
 
     /**
-     * @description 用户自定义进程管理
+     * @description register user process
      *
      * @param UserProcess $userProcess
      *
@@ -301,7 +300,7 @@ class Application extends AppBase implements AppInterface
     }
 
     /**
-     * @description 获取用户自定义进程管理
+     * @description get user process
      *
      * @return UserProcess
      */
@@ -311,7 +310,7 @@ class Application extends AppBase implements AppInterface
     }
 
     /**
-     * @description 注册自定义进程
+     * @description register user process
      *
      * @param string $name
      *
@@ -331,7 +330,7 @@ class Application extends AppBase implements AppInterface
     }
 
     /**
-     * @description 注册连接池
+     * @description register pool
      *
      * @param string $name
      *
@@ -349,7 +348,7 @@ class Application extends AppBase implements AppInterface
     }
 
     /**
-     * @description 获取连接池
+     * @description get pool
      *
      * @param string $name
      * 
@@ -363,13 +362,13 @@ class Application extends AppBase implements AppInterface
     }
 
     /**
-     * @description 运用启动
+     * @description app run
      *
-     * @return null
+     * @return void
      *
      * @throws KoveyException
      */
-    public function run()
+    public function run() : void
     {
         if (!is_object($this->server)) {
             throw new KoveyException('server not register');
@@ -379,7 +378,7 @@ class Application extends AppBase implements AppInterface
     }
 
     /**
-     * @description 底层服务器事件监听
+     * @description event listen on server
      *
      * @param string $event
      *

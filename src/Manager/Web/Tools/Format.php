@@ -1,6 +1,6 @@
 <?php
 /**
- * @description 格式化
+ * @description format error
  *
  * @package Kovey\Rpc\Manager\Web\Tools
  *
@@ -14,7 +14,7 @@ namespace Kovey\Rpc\Manager\Web\Tools;
 class Format
 {
     /**
-     * @description 格式化异常错误
+     * @description format exception err
      *
      * @param string $message
      *

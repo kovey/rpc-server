@@ -1,6 +1,6 @@
 <?php
 /**
- * @description 对外接口基类
+ * @description handler abstract
  *
  * @package
  *

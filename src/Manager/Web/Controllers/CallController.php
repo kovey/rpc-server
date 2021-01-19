@@ -1,6 +1,6 @@
 <?php
 /**
- * @description 服务调用
+ * @description call service interface
  *
  * @package Kovey\Rpc\Manager\Web\Controllers
  *
@@ -18,13 +18,13 @@ use Kovey\Library\Util\Json;
 class CallController extends Controller
 {
     /**
-     * @description 服务接口
+     * @description service api
      *
      * @param Kovey\Rpc\Application
      *
-     * @return null
+     * @return string
      */
-    public function serviceAction($app)
+    public function serviceAction($app) : string
     {
         $this->disableView();
 
@@ -71,11 +71,11 @@ class CallController extends Controller
     }
 
     /**
-     * @description 调用界面
+     * @description call user interface
      *
      * @return void
      */
-    public function indexAction()
+    public function indexAction() : void
     {
         $this->view->args = empty($this->data['a']) ? array() : Json::decode($this->data['a']);
         $this->view->service = $this->data['s'] ?? '';

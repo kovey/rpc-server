@@ -1,6 +1,6 @@
 <?php
 /**
- * @description 短连接服务端
+ * @description server
  *
  * @package Server
  *
@@ -27,53 +27,63 @@ use Kovey\Event\Listener\ListenerProvider;
 class Server implements PortInterface
 {
     /**
-     * @description 服务器
+     * @description Server
      *
      * @var Swoole\Server | Swoole\Http\Server
      */
     private \Swoole\Server | \Swoole\Http\Server $serv;
 
     /**
-     * @description rpc服务监听
+     * @description rpc port
      *
      * @var Swoole\Server\Port
      */
     private Port $port;
 
     /**
-     * @description 配置
+     * @description config
      *
      * @var Array
      */
     private Array $conf;
 
     /**
-     * @description 事件
+     * @description events listened
      *
      * @var Array
      */
     private Array $onEvents;
 
     /**
-     * @description 允许的事件
+     * @description events support
      *
      * @var Array
      */
     private Array $allowEvents;
 
     /**
-     * @description 是否运行在docker中
+     * @description is runned on docker ?
      *
      * @var bool
      */
     private bool $isRunDocker;
 
+    /**
+     * @description event dispatcher
+     *
+     * @var Dispatch
+     */
     private Dispatch $dispatch;
 
+    /**
+     * @description event listener provider
+     *
+     * @var ListenerProvider
+     */
     private ListenerProvider $provider;
 
     /**
-     * @description 构造函数
+     * @description construct
      *
      * @param Array $conf
      *
@@ -94,7 +104,7 @@ class Server implements PortInterface
     }
 
     /**
-     * @description 初始化服务
+     * @description init server
      *
      * @return Server
      */
@@ -163,7 +173,7 @@ class Server implements PortInterface
     }
 
     /**
-     * @description 初始化LOG
+     * @description init logger
      *
      * @return Server
      */
@@ -182,7 +192,7 @@ class Server implements PortInterface
     }
 
     /**
-     * @description 初始化允许的事件
+     * @description init events support
      *
      * @return Server
      */
@@ -202,7 +212,7 @@ class Server implements PortInterface
     }
 
     /**
-     * @description 初始化回调
+     * @description init callback
      *
      * @return Server
      */
@@ -215,27 +225,27 @@ class Server implements PortInterface
     }
 
     /**
-     * @description manager 启动回调
+     * @description manager start event
      *
      * @param Swoole\Server $serv
      *
-     * @return null
+     * @return void
      */
-    public function managerStart($serv)
+    public function managerStart($serv) : void
     {
         ko_change_process_name($this->conf['name'] . ' master');
     }
 
     /**
-     * @description worker 启动回调
+     * @description worker start
      *
      * @param Swoole\Server $serv
      *
      * @param int $workerId
      *
-     * @return null
+     * @return void
      */
-    public function workerStart($serv, $workerId)
+    public function workerStart($serv, $workerId) : void
     {
         ko_change_process_name($this->conf['name'] . ' worker');
 
@@ -253,7 +263,7 @@ class Server implements PortInterface
     }
 
     /**
-     * @description 添加事件
+     * @description event listen
      *
      * @param string $event
      *
@@ -281,15 +291,15 @@ class Server implements PortInterface
     }
 
     /**
-     * @description 管道事件回调
+     * @description pipe message event
      *
      * @param Swoole\Server $serv
      *
      * @param Swoole\Server\PipeMessage $message
      *
-     * @return null
+     * @return void
      */
-    public function pipeMessage(\Swoole\Server | \Swoole\Http\Server $serv, \Swoole\Server\PipeMessage $message)
+    public function pipeMessage(\Swoole\Server | \Swoole\Http\Server $serv, \Swoole\Server\PipeMessage $message) : void
     {
         try {
             $event = new Event\PipeMessage($message->data);
@@ -300,28 +310,28 @@ class Server implements PortInterface
     }
 
     /**
-     * @description 链接回调
-     *
-     * @param Swoole\Server $serv
-     *
-     * @param int $fd
-     *
-     * @return null
-     */
-    public function connect(\Swoole\Server $serv, \Swoole\Server\Event $event)
-    {
-    }
-
-    /**
-     * @description 接收回调
+     * @description connect event
      *
      * @param Swoole\Server $serv
      *
      * @param Swoole\Server\Event $event
      *
-     * @return null
+     * @return void
      */
-    public function receive(\Swoole\Server $serv, \Swoole\Server\Event $event)
+    public function connect(\Swoole\Server $serv, \Swoole\Server\Event $event) : void
+    {
+    }
+
+    /**
+     * @description receive event
+     *
+     * @param Swoole\Server $serv
+     *
+     * @param Swoole\Server\Event $event
+     *
+     * @return void
+     */
+    public function receive(\Swoole\Server $serv, \Swoole\Server\Event $event) : void
     {
         $proto = null;
         try {
@@ -391,15 +401,15 @@ class Server implements PortInterface
     }
 
     /**
-     * @description Handler 处理
+     * @description Handler process
      *
      * @param ProtocolInterface $packet
      *
      * @param int $fd
      *
-     * @return null
+     * @return void
      */
-    private function handler(ProtocolInterface $packet, $fd)
+    private function handler(ProtocolInterface $packet, $fd) : void
     {
         $begin = microtime(true);
         $reqTime = time();
@@ -451,7 +461,7 @@ class Server implements PortInterface
     }
 
     /**
-     * @description 监控
+     * @description monitor
      *
      * @param float $begin
      *
@@ -465,9 +475,9 @@ class Server implements PortInterface
      *
      * @param int $fd
      *
-     * @return null
+     * @return void
      */
-    private function monitor(float $begin, float $end, ProtocolInterface $packet, int $reqTime, Array $result, $fd)
+    private function monitor(float $begin, float $end, ProtocolInterface $packet, int $reqTime, Array $result, $fd) : void
     {
         try {
             $this->dispatch->dispatch(new Event\Monitor(array(
@@ -496,15 +506,15 @@ class Server implements PortInterface
     }
 
     /**
-     * @description http 请求
+     * @description http request
      *
      * @param Swoole\Http\Request $request
      *
      * @param Swoole\Http\Response $response
      *
-     * @return null
+     * @return void
      */
-    public function request(\Swoole\Http\Request $request, \Swoole\Http\Response $response)
+    public function request(\Swoole\Http\Request $request, \Swoole\Http\Response $response) : void
     {
         $traceId = hash('sha256', uniqid($request->server['request_uri'], true) . random_int(1000000, 9999999));
         $result = array();
@@ -540,7 +550,7 @@ class Server implements PortInterface
     }
 
     /**
-     * @description 发送数据
+     * @description send data to client
      *
      * @param Array $packet
      *
@@ -579,34 +589,34 @@ class Server implements PortInterface
     }
 
     /**
-     * @description 关闭链接
+     * @description close connection
      *
      * @param Swoole\Server $serv
      *
-     * @param int $fd
+     * @param Swoole\Server\Event $event
      *
-     * @return null
+     * @return void
      */
-    public function close($serv, $fd)
+    public function close(\Swoole\Server $serv, \Swoole\Server\Event $event) : void
     {
     }
 
     /**
-     * @description 启动服务
+     * @description start app
      *
-     * @return null
+     * @return void
      */
-    public function start()
+    public function start() : void
     {
         $this->serv->start();
     }
 
     /**
-     * @description 获取底层服务
+     * @description get server
      *
      * @return Swoole\Server | Swoole\Http\Server
      */
-    public function getServ()
+    public function getServ() : \Swoole\Server
     {
         return $this->serv;
     }

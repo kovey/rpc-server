@@ -1,6 +1,6 @@
 <?php
 /**
- * @description 视图
+ * @description View
  *
  * @package Kovey\Rpc\Manager\Mvc
  *
@@ -14,21 +14,21 @@ namespace Kovey\Rpc\Manager\Mvc;
 class View
 {
     /**
-     * @description 模板路径
+     * @description template path
      *
      * @var string
      */
     private string $template;
 
     /**
-     * @description 页面数据
+     * @description view data
      *
      * @var Array
      */
     private Array $data;
 
     /**
-     * @description 构造
+     * @description construct
      *
      * @param ResponseInterface $res
      *
@@ -42,45 +42,46 @@ class View
     }
 
     /**
-     * @description 设置模板
+     * @description set template
      *
      * @param string $template
      *
-     * @return null
+     * @return View
      */
-    public function setTemplate(string $template)
+    public function setTemplate(string $template) : View
     {
         $this->template = $template;
+        return $this;
     }
 
     /**
-     * @description 设置变量值
+     * @description set veriable
      *
      * @param string $name
      *
      * @param mixed $val
      *
-     * @return null
+     * @return void
      */
-    public function __set(string $name, $val)
+    public function __set(string $name, mixed $val) : void
     {
         $this->data[$name] = $val;
     }
 
     /**
-     * @description 获取变量值
+     * @description get aata
      *
      * @param string $name
      *
-     * @return mixed : null
+     * @return mixed
      */
-    public function __get(string $name)
+    public function __get(string $name) : mixed
     {
         return $this->data[$name] ?? null;
     }
 
     /**
-     * @description 页面渲染
+     * @description render view
      *
      * @return string
      */

@@ -1,7 +1,7 @@
 <?php
 /**
  *
- * @description 自动加载管理
+ * @description autoload manager
  *
  * @package     App\Bootstrap
  *
@@ -14,21 +14,21 @@ namespace Kovey\Rpc\App\Bootstrap;
 class Autoload
 {
     /**
-     * @description 自定义的加载路径
+     * @description custom autoload path
      *
      * @var Array
      */
     private Array $customs;
 
     /**
-     * @description 库目录
+     * @description library path
      *
      * @var string
      */
     private string $library;
 
     /**
-     * @description 构造函数
+     * @description construct
      *
      * @return Autoload
      */
@@ -39,24 +39,24 @@ class Autoload
     }
 
     /**
-     * @description 注册自动加载的路径
+     * @description register autoload path
      *
-     * @return null
+     * @return Autoload
      */
-    public function register()
+    public function register() : Autoload
     {
         spl_autoload_register(array($this, 'autoloadUserLib'));
         spl_autoload_register(array($this, 'autoloadLocal'));
     }
 
     /**
-     * @description 用户库目录
+     * @description user library
      *
      * @param str_replace $className
      *
-     * @return null
+     * @return void
      */
-    public function autoloadUserLib(string $className)
+    public function autoloadUserLib(string $className) : void
     {
         try {
             $className = $this->library . str_replace('\\', '/', $className) . '.php';
@@ -72,13 +72,13 @@ class Autoload
     }
 
     /**
-     * @description 自定义加载路径
+     * @description custom path
      *
      * @param string
      *
-     * @return null
+     * @return void
      */
-    public function autoloadLocal(string $className)
+    public function autoloadLocal(string $className) : void
     {
         foreach ($this->customs as $path) {
             try {
@@ -96,13 +96,13 @@ class Autoload
     }
 
     /**
-     * @description 添加自定义加载路径
+     * @description add custom path
      *
      * @param string $path
      *
      * @return Autoload
      */
-    public function addLocalPath(string $path)
+    public function addLocalPath(string $path) : Autoload
     {
         if (!is_dir($path)) {
             return $this;

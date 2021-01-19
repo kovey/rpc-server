@@ -1,7 +1,7 @@
 <?php
 /**
  *
- * @description 整个运用启动前的初始化
+ * @description init before app start
  *
  * @package     App\Bootstrap
  *
@@ -28,13 +28,13 @@ use Kovey\Rpc\Event;
 class Bootstrap
 {
     /**
-     * @description 初始化日志
+     * @description init logger
      *
      * @param Application $app
      *
-     * @return null
+     * @return void
      */
-    public function __initLogger(Application $app)
+    public function __initLogger(Application $app) : void
     {
         ko_change_process_name(Manager::get('server.rpc.name') . ' rpc root');
         Logger::setLogPath(Manager::get('server.server.logger_dir'));
@@ -44,13 +44,13 @@ class Bootstrap
     }
 
     /**
-     * @description 初始化APP
+     * @description init app
      *
      * @param Application $app
      *
-     * @return null
+     * @return void
      */
-    public function __initApp(Application $app)
+    public function __initApp(Application $app) : void
     {
         $app->registerServer(new Server($app->getConfig()['server']))
             ->registerContainer(new Container())
@@ -58,25 +58,25 @@ class Bootstrap
     }
 
     /**
-     * @description 初始化自定义进程
+     * @description init user custom process
      *
      * @param Application $app
      *
-     * @return null
+     * @return void
      */
-    public function __initProcess(Application $app)
+    public function __initProcess(Application $app) : void
     {
         $app->registerProcess('kovey_config', (new Process\Config())->setProcessName(Manager::get('server.rpc.name') . ' config'));
     }
 
     /**
-     * @description 初始化自定义的Bootsrap
+     * @description init custom bootstrap
      *
      * @param Application $app
      *
-     * @return null
+     * @return void
      */
-    public function __initCustomBoot(Application $app)
+    public function __initCustomBoot(Application $app) : void
     {
         $bootstrap = $app->getConfig()['rpc']['boot'] ?? 'application/Bootstrap.php';
         $file = APPLICATION_PATH . '/' . $bootstrap;
@@ -89,7 +89,7 @@ class Bootstrap
         $app->registerCustomBootstrap(new \Bootstrap());
     }
 
-    public function __initRunAction(Application $app)
+    public function __initRunAction(Application $app) : void
     {
         $app->serverOn('run_action', function (Event\RunAction $event) use ($app) {
             $router = new Router($event->getRequest()->server['path_info'] ?? '/');
@@ -133,7 +133,7 @@ class Bootstrap
         });
     }
 
-    public function __initParseInject(Application $app)
+    public function __initParseInject(Application $app) : void
     {
         $app->registerLocalLibPath(APPLICATION_PATH . '/application');
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * @description rpc接口界面
+ * @description rpc interface ui
  *
  * @package Kovey\Rpc\Manager\Web\Controllers
  *
@@ -19,18 +19,18 @@ use Kovey\Library\Config\Manager;
 class IndexController extends Controller
 {
     /**
-     * @description 接口界面
+     * @description api ui
      *
      * @return void
      */
-    public function indexAction()
+    public function indexAction() : void
     {
         $service = $this->data['s'] ?? '';
         $this->view->services = $this->getService($service);
     }
 
     /**
-     * @description 获取所有服务
+     * @description get all service
      *
      * @param string $service
      *

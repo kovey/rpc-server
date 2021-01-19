@@ -1,7 +1,7 @@
 <?php
 /**
  *
- * @description 传输协议
+ * @description rpc protocol
  *
  * @package     Protocol
  *
@@ -20,56 +20,56 @@ use Kovey\Library\Util\Json as JS;
 class Json implements ProtocolInterface
 {
     /**
-     * @description 路径
+     * @description path
      *
      * @var string
      */
     private string $path;
 
     /**
-     * @description 方法
+     * @description method
      *
      * @var string
      */
     private string $method;
 
     /**
-     * @description 参数
+     * @description arguments
      *
      * @var Array
      */
     private Array $args;
 
     /**
-     * @description 包体类容
+     * @description body
      *
      * @var string
      */
     private string $body;
 
     /**
-     * @description 秘钥
+     * @description secret key
      *
      * @var string
      */
     private string $secretKey;
 
     /**
-     * @description 明文
+     * @description clear text
      *
      * @var Array
      */
     private Array $clear;
 
     /**
-     * @description 加密类型
+     * @description encrypt type
      *
      * @var string
      */
     private string $encryptType;
 
     /**
-     * @description 是否公钥
+     * @description is public key
      *
      * @var bool
      */
@@ -97,7 +97,7 @@ class Json implements ProtocolInterface
     private string $clientLang;
 
     /**
-     * @description 构造函数
+     * @description construct
      *
      * @param string $body
      *
@@ -124,7 +124,7 @@ class Json implements ProtocolInterface
     }
 
     /**
-     * @description 解析包
+     * @description parse body
      *
      * @return bool
      */
@@ -166,7 +166,7 @@ class Json implements ProtocolInterface
     }
 
     /**
-     * @description 获取路径
+     * @description get path
      *
      * @return string
      */
@@ -176,7 +176,7 @@ class Json implements ProtocolInterface
     }
 
     /**
-     * @description 获取方法
+     * @description get method
      *
      * @return string
      */
@@ -186,7 +186,7 @@ class Json implements ProtocolInterface
     }
 
     /**
-     * @description 获取参数
+     * @description get arguments
      *
      * @return Array
      */
@@ -196,7 +196,7 @@ class Json implements ProtocolInterface
     }
 
     /**
-     * @description 获取明文
+     * @description get clear
      *
      * @return string
      */
@@ -236,7 +236,7 @@ class Json implements ProtocolInterface
     }
 
     /**
-     * @description 打包
+     * @description package
      *
      * @param Array $packet
      *
@@ -257,7 +257,7 @@ class Json implements ProtocolInterface
     }
 
     /**
-     * @description 解包
+     * @description unpackage
      *
      * @param string $data
      *

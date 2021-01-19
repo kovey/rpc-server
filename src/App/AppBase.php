@@ -1,6 +1,6 @@
 <?php
 /**
- * @description App基类，用于多端口监听
+ * @description App Base
  *
  * @package Kovey\Rpc\App
  *
@@ -26,51 +26,66 @@ use Kovey\Event\Listener\ListenerProvider;
 class AppBase
 {
     /**
-     * @description 服务器
+     * @description server
      *
      * @var Kovey\Library\Server\PortInterface
      */
     protected PortInterface $server;
 
     /**
-     * @description 容器对象
+     * @description Container
      *
      * @var Kovey\Library\Container\ContainerInterface
      */
     protected ContainerInterface $container;
 
     /**
-     * @description 应用配置
+     * @description config
      *
      * @var Array
      */
     protected Array $config;
 
     /**
-     * @description 自动加载
+     * @description autoload
      *
      * @var Kovey\Rpc\App\Bootstrap\Autoload
      */
     protected Autoload $autoload;
 
     /**
-     * @description 事件
+     * @description events listened
      *
      * @var Array
      */
     protected Array $onEvents;
 
+    /**
+     * @description events support
+     *
+     * @var Array
+     */
     protected static Array $events = array(
         'pipeMessage' => Event\PipeMessage::class,
         'monitor' => Event\Monitor::class,
     );
 
+    /**
+     * @description event dispatcher
+     *
+     * @var Dispatch
+     */
     protected Dispatch $dispatch;
 
+    /**
+     * @description listener provider
+     *
+     * @var ListenerProvider
+     */
     protected ListenerProvider $provider;
 
     /**
-     * @description 构造函数
+     * @description construct
      *
      * @return AppBase
      */
@@ -83,7 +98,7 @@ class AppBase
     }
 
     /**
-     * @description 事件监听
+     * @description event listen
      *
      * @param string $event
      *
@@ -110,7 +125,7 @@ class AppBase
     }
 
     /**
-     * @description 设置配置
+     * @description set Config
      *
      * @param Array $config
      *
@@ -123,7 +138,7 @@ class AppBase
     }
 
     /**
-     * @description 获取配置
+     * @description get config
      *
      * @return Array
      */
@@ -133,7 +148,7 @@ class AppBase
     }
 
     /**
-     * @description handler业务
+     * @description handler event process
      *
      * @param Event\Handler $event
      *
@@ -179,7 +194,7 @@ class AppBase
     }
 
     /**
-     * @description 注册自动加载
+     * @description register eutoload
      *
      * @param Autoload $autoload
      *
@@ -192,7 +207,7 @@ class AppBase
     }
 
     /**
-     * @description 注册服务端
+     * @description register server
      *
      * @param PortInterface $server
      *
@@ -209,13 +224,13 @@ class AppBase
     }
 
     /**
-     * @description 监控
+     * @description monitor event process
      *
      * @param Array $data
      *
-     * @return null
+     * @return void
      */
-    public function monitor(Event\Monitor $event)
+    public function monitor(Event\Monitor $event) : void
     {
         Monitor::write($event->getData());
         go (function ($event) {
@@ -224,7 +239,7 @@ class AppBase
     }
 
     /**
-     * @description 注册容器
+     * @description register container
      *
      * @param ContainerInterface $container
      *
@@ -237,7 +252,7 @@ class AppBase
     }
 
     /**
-     * @description 检测配置
+     * @description check config
      *
      * @return AppBase
      *
@@ -270,7 +285,7 @@ class AppBase
     }
 
     /**
-     * @description 注册本地加载路径
+     * @description register local library path
      *
      * @param string $path
      *
@@ -287,7 +302,7 @@ class AppBase
     }
 
     /**
-     * @description 获取容器
+     * @description get container
      *
      * @return ContainerInterface
      */
@@ -297,7 +312,7 @@ class AppBase
     }
 
     /**
-     * @description 服务器事件监听
+     * @description event listen on server
      *
      * @param string $event
      *
@@ -305,7 +320,7 @@ class AppBase
      *
      * @return AppBase
      */
-    public function serverOn(string $event, $callable) : AppBase
+    public function serverOn(string $event, array | callable $callable) : AppBase
     {
         $this->server->on($event, $callable);
         return $this;
