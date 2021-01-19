@@ -265,7 +265,7 @@ class Port implements PortInterface
      *
      * @return void
      */
-    private function handler(ProtocolInterface $packet, $fd) : void
+    private function handler(ProtocolInterface $packet, int $fd) : void
     {
         $begin = microtime(true);
         $reqTime = time();
@@ -330,7 +330,7 @@ class Port implements PortInterface
      *
      * @return void
      */
-    private function monitor(float $begin, float $end, ProtocolInterface $packet, int $reqTime, Array $result, $fd) : void
+    private function monitor(float $begin, float $end, ProtocolInterface $packet, int $reqTime, Array $result, int $fd) : void
     {
         try {
             $event = new Event\Monitor(array(
@@ -368,7 +368,7 @@ class Port implements PortInterface
      *
      * @return bool
      */
-    private function send(Array $packet, $fd) : bool
+    private function send(Array $packet, int $fd) : bool
     {
         if (!$this->serv->exist($fd)) {
             return false;
@@ -405,11 +405,11 @@ class Port implements PortInterface
      *
      * @param Swoole\Server $serv
      *
-     * @param int $fd
+     * @param Swoole\Server\Event $event
      *
      * @return void
      */
-    public function close($serv, $fd) : void
+    public function close(\Swoole\Server $serv, \Swoole\Server\Event $event) : void
     {
     }
 
@@ -420,7 +420,7 @@ class Port implements PortInterface
      *
      * @return string
      */
-    public function getClientIP($fd) : string
+    public function getClientIP(int $fd) : string
     {
         $info = $this->serv->getClientInfo($fd);
         if (empty($info)) {

@@ -231,7 +231,7 @@ class Server implements PortInterface
      *
      * @return void
      */
-    public function managerStart($serv) : void
+    public function managerStart(\Swoole\Server $serv) : void
     {
         ko_change_process_name($this->conf['name'] . ' master');
     }
@@ -245,7 +245,7 @@ class Server implements PortInterface
      *
      * @return void
      */
-    public function workerStart($serv, $workerId) : void
+    public function workerStart(\Swoole\Server $serv, int $workerId) : void
     {
         ko_change_process_name($this->conf['name'] . ' worker');
 
@@ -409,7 +409,7 @@ class Server implements PortInterface
      *
      * @return void
      */
-    private function handler(ProtocolInterface $packet, $fd) : void
+    private function handler(ProtocolInterface $packet, int $fd) : void
     {
         $begin = microtime(true);
         $reqTime = time();
@@ -477,7 +477,7 @@ class Server implements PortInterface
      *
      * @return void
      */
-    private function monitor(float $begin, float $end, ProtocolInterface $packet, int $reqTime, Array $result, $fd) : void
+    private function monitor(float $begin, float $end, ProtocolInterface $packet, int $reqTime, Array $result, int $fd) : void
     {
         try {
             $this->dispatch->dispatch(new Event\Monitor(array(
@@ -558,7 +558,7 @@ class Server implements PortInterface
      *
      * @return bool
      */
-    private function send(Array $packet, $fd) : bool
+    private function send(Array $packet, int $fd) : bool
     {
         if (!$this->serv->exist($fd)) {
             return false;
@@ -628,7 +628,7 @@ class Server implements PortInterface
      *
      * @return string
      */
-    public function getClientIP($fd) : string
+    public function getClientIP(int $fd) : string
     {
         $info = $this->serv->getClientInfo($fd);
         if (empty($info)) {
