@@ -36,10 +36,13 @@ class Business
 
     private ProtocolInterface $packet;
 
-    public function __construct(SSE $event)
+    private Array $config;
+
+    public function __construct(SSE $event, Array $config)
     {
         $this->event = $event;
         $this->result = array();
+        $this->config = $config;
     }
 
     public function begin(ServerInterface $server) : Business
@@ -54,13 +57,13 @@ class Business
     {
         try {
             if ($event->listened('unpack')) {
-                $this->packet = $event->dispatchWithReturn(new Event\Unpack($this->event->data, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes'));
+                $this->packet = $event->dispatchWithReturn(new Event\Unpack($this->event->data, $this->config['secret_key'], $this->config['encrypt_type'] ?? 'aes'));
                 if (!$this->packet instanceof ProtocolInterface) {
                     $this->parseResultDefault();
                     return $this;
                 }
             } else {
-                $this->packet = new Json($this->event->data, $this->conf['secret_key'], $this->conf['encrypt_type'] ?? 'aes');
+                $this->packet = new Json($this->event->data, $this->config['secret_key'], $this->config['encrypt_type'] ?? 'aes');
             }
 
             if (!$this->packet->parse()) {
@@ -126,7 +129,7 @@ class Business
             'type' => $this->result['type'],
             'err' => $this->result['err'],
             'trace' => $this->result['trace'],
-            'service' => $this->conf['name'],
+            'service' => $this->config['name'],
             'service_type' => 'rpc',
             'class' => $this->packet->getPath(),
             'method' => $this->packet->getMethod(),
@@ -139,7 +142,7 @@ class Business
             'traceId' => $this->packet->getTraceId(),
             'from' => $this->packet->getFrom(),
             'end' => $end * 10000
-        ));
+        ), $this->packet->getTraceId());
 
         return $this;
     }

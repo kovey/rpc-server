@@ -28,7 +28,7 @@ class Application extends AppBase
      *
      * @return Application
      */
-    public static function getInstance() : Application
+    public static function getInstance(array $config = array()) : Application
     {
         if (empty(self::$instance)) {
             self::$instance = new self($config);

@@ -11,11 +11,12 @@
  */
 namespace Kovey\Rpc\Server;
 
+use Kovey\Rpc\Protocol\Json;
 use Kovey\App\Components\PortAbstract;
 use Kovey\Library\Protocol\ProtocolInterface;
 use Kovey\Rpc\Event;
 
-class Port implements PortAbstract
+class Port extends PortAbstract
 {
     /**
      * @description init
@@ -68,7 +69,7 @@ class Port implements PortAbstract
      */
     public function receive(\Swoole\Server $serv, \Swoole\Server\Event $event) : void
     {
-        $business = new Business($event);
+        $business = new Business($event, $this->config);
         $business->begin($this)
                  ->run($this->event)
                  ->end($this)
@@ -103,14 +104,14 @@ class Port implements PortAbstract
         }
 
         $len = strlen($data);
-        if ($len <= self::PACKET_MAX_LENGTH) {
+        if ($len <= ProtocolInterface::MAX_LENGTH) {
             return $this->serv->send($fd, $data);
         }
 
         $sendLen = 0;
         while ($sendLen < $len) {
-            $this->serv->send($fd, substr($data, $sendLen, self::PACKET_MAX_LENGTH));
-            $sendLen += self::PACKET_MAX_LENGTH;
+            $this->serv->send($fd, substr($data, $sendLen, ProtocolInterface::MAX_LENGTH));
+            $sendLen += ProtocolInterface::MAX_LENGTH;
         }
 
         return true;

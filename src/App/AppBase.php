@@ -39,7 +39,7 @@ class AppBase extends App
      *
      * @return Application
      */
-    public static function getInstance(Array $config = array()) : Application
+    public static function getInstance(Array $config = array()) : AppBase
     {
         if (empty(self::$instance)) {
             self::$instance = new self($config);
@@ -48,7 +48,12 @@ class AppBase extends App
         return self::$instance;
     }
 
-    protected function initWork() : Application
+    protected function init() : AppBase
+    {
+        return $this;
+    }
+
+    protected function initWork() : AppBase
     {
         $this->work = new Handler($this->config['rpc']['handler']);
         $this->work->setEventManager($this->event);

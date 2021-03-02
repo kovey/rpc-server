@@ -49,6 +49,8 @@ class Autoload implements AutoloadInterface
     {
         spl_autoload_register(array($this, 'autoloadUserLib'));
         spl_autoload_register(array($this, 'autoloadLocal'));
+
+        return $this;
     }
 
     /**

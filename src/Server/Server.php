@@ -16,7 +16,7 @@ use Kovey\Library\Protocol\ProtocolInterface;
 use Kovey\App\Components\ServerAbstract;
 use Kovey\Rpc\Event;
 
-class Server extends ServiceAbstract
+class Server extends ServerAbstract
 {
     /**
      * @description rpc port
@@ -110,7 +110,7 @@ class Server extends ServiceAbstract
      */
     public function receive(\Swoole\Server $serv, \Swoole\Server\Event $event) : void
     {
-        $business = new Business($event);
+        $business = new Business($event, $this->config);
         $business->begin($this)
                  ->run($this->event)
                  ->end($this)
@@ -160,14 +160,14 @@ class Server extends ServiceAbstract
         }
 
         $len = strlen($data);
-        if ($len <= self::PACKET_MAX_LENGTH) {
+        if ($len <= ProtocolInterface::MAX_LENGTH) {
             return $this->serv->send($fd, $data);
         }
 
         $sendLen = 0;
         while ($sendLen < $len) {
-            $this->serv->send($fd, substr($data, $sendLen, self::PACKET_MAX_LENGTH));
-            $sendLen += self::PACKET_MAX_LENGTH;
+            $this->serv->send($fd, substr($data, $sendLen, ProtocolInterface::MAX_LENGTH));
+            $sendLen += ProtocolInterface::MAX_LENGTH;
         }
 
         return true;
