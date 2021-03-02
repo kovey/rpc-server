@@ -21,10 +21,8 @@
         "php": "^8.0",
         "ext-swoole": "^4.6.0",
         "kovey/library": "^2.1",
-        "kovey/connection": "^1.1",
         "kovey/logger": "^2.0",
-        "kovey/container": "^1.0",
-        "kovey/process": "^1.0"
+        "kovey/app": "^1.0.2"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.3"

@@ -11,116 +11,47 @@
  */
 namespace Kovey\Rpc\App;
 
-use Kovey\Rpc\Handler\HandlerAbstract;
-use Kovey\Container\ContainerInterface;
-use Kovey\Library\Config\Manager;
-use Kovey\Rpc\App\Bootstrap\Autoload;
-use Kovey\Library\Server\PortInterface;
-use Kovey\Logger\Monitor;
+use Kovey\App\App;
+use Kovey\App\Components\ServerInterface;
 use Kovey\Library\Exception\KoveyException;
-use Kovey\Rpc\Event;
-use Kovey\Event\Dispatch;
-use Kovey\Event\Listener\Listener;
-use Kovey\Event\Listener\ListenerProvider;
+use Kovey\Rpc\Work\Handler;
 
-class AppBase
+class AppBase extends App
 {
+    /**
+     * @description Application instance
+     *
+     * @var Application
+     */
+    private static ?Application $instance = null;
+
     /**
      * @description server
      *
-     * @var Kovey\Library\Server\PortInterface
+     * @var ServerInterface
      */
-    protected PortInterface $server;
+    protected ServerInterface $server;
 
     /**
-     * @description Container
+     * @description get instance
      *
-     * @var Kovey\Library\Container\ContainerInterface
-     */
-    protected ContainerInterface $container;
-
-    /**
-     * @description config
+     * @param Array $config
      *
-     * @var Array
+     * @return Application
      */
-    protected Array $config;
-
-    /**
-     * @description autoload
-     *
-     * @var Kovey\Rpc\App\Bootstrap\Autoload
-     */
-    protected Autoload $autoload;
-
-    /**
-     * @description events listened
-     *
-     * @var Array
-     */
-    protected Array $onEvents;
-
-    /**
-     * @description events support
-     *
-     * @var Array
-     */
-    protected static Array $events = array(
-        'pipeMessage' => Event\PipeMessage::class,
-        'monitor' => Event\Monitor::class,
-    );
-
-    /**
-     * @description event dispatcher
-     *
-     * @var Dispatch
-     */
-    protected Dispatch $dispatch;
-
-    /**
-     * @description listener provider
-     *
-     * @var ListenerProvider
-     */
-    protected ListenerProvider $provider;
-
-    /**
-     * @description construct
-     *
-     * @return AppBase
-     */
-    public function __construct()
+    public static function getInstance(Array $config = array()) : Application
     {
-        $this->config = array();
-        $this->onEvents = array();
-        $this->provider = new ListenerProvider();
-        $this->dispatch = new Dispatch($this->provider);
+        if (empty(self::$instance)) {
+            self::$instance = new self($config);
+        }
+
+        return self::$instance;
     }
 
-    /**
-     * @description event listen
-     *
-     * @param string $event
-     *
-     * @param callable | Array $callable
-     *
-     * @return AppBase
-     */
-    public function on(string $event, Array | callable $callable) : AppBase
+    protected function initWork() : Application
     {
-        if (!isset(self::$events[$event])) {
-            return $this;
-        }
-
-        if (!is_callable($callable)) {
-            return $this;
-        }
-
-        $this->onEvents[$event] = $event;
-        $listener = new Listener();
-        $listener->addEvent(self::$events[$event], $callable);
-        $this->provider->addListener($listener);
-
+        $this->work = new Handler($this->config['rpc']['handler']);
+        $this->work->setEventManager($this->event);
         return $this;
     }
 
@@ -138,116 +69,19 @@ class AppBase
     }
 
     /**
-     * @description get config
-     *
-     * @return Array
-     */
-    public function getConfig() : Array
-    {
-        return $this->config;
-    }
-
-    /**
-     * @description handler event process
-     *
-     * @param Event\Handler $event
-     *
-     * @return Array
-     */
-    public function handler(Event\Handler $event) : Array
-    {
-        $class = $this->config['rpc']['handler'] . '\\' . ucfirst($event->getClass());
-        $keywords = $this->container->getKeywords($class, $event->getMethod());
-        $instance = $this->container->get($class, $event->getTraceId(), $keywords['ext']);
-        if (!$instance instanceof HandlerAbstract) {
-            return array(
-                'err' => sprintf('%s is not extends HandlerAbstract', ucfirst($class)),
-                'type' => 'exception',
-                'code' => 1,
-                'result' => null,
-                'trace' => ''
-            );
-        }
-
-        $instance->setClientIp($event->getClientIP());
-
-        if ($keywords['openTransaction']) {
-            $keywords['database']->getConnection()->beginTransaction();
-            try {
-                $result = call_user_func(array($instance, $event->getMethod()), ...$event->getArgs());
-                $keywords['database']->getConnection()->commit();
-            } catch (\Throwable $e) {
-                $keywords['database']->getConnection()->rollBack();
-                throw $e;
-            }
-        } else {
-            $result = call_user_func(array($instance, $event->getMethod()), ...$event->getArgs());
-        }
-
-        return array(
-            'err' => '',
-            'type' => 'success',
-            'code' => 0,
-            'result' => $result,
-            'trace' => ''
-        );
-    }
-
-    /**
-     * @description register eutoload
-     *
-     * @param Autoload $autoload
-     *
-     * @return AppBase
-     */
-    public function registerAutoload(Autoload $autoload) : AppBase
-    {
-        $this->autoload = $autoload;
-        return $this;
-    }
-
-    /**
      * @description register server
      *
-     * @param PortInterface $server
+     * @param ServerInterface $server
      *
      * @return AppBase
      */
-    public function registerServer(PortInterface $server) : AppBase
+    public function registerServer(ServerInterface $server) : AppBase
     {
         $this->server = $server;
         $this->server
-            ->on('handler', array($this, 'handler'))
+            ->on('handler', array($this->work, 'run'))
             ->on('monitor', array($this, 'monitor'));
 
-        return $this;
-    }
-
-    /**
-     * @description monitor event process
-     *
-     * @param Array $data
-     *
-     * @return void
-     */
-    public function monitor(Event\Monitor $event) : void
-    {
-        Monitor::write($event->getData());
-        go (function ($event) {
-            $this->dispatch->dispatch($event);
-        }, $event);
-    }
-
-    /**
-     * @description register container
-     *
-     * @param ContainerInterface $container
-     *
-     * @return AppBase
-     */
-    public function registerContainer(ContainerInterface $container) : AppBase
-    {
-        $this->container = $container;
         return $this;
     }
 
@@ -282,33 +116,6 @@ class AppBase
         }
 
         return $this;
-    }
-
-    /**
-     * @description register local library path
-     *
-     * @param string $path
-     *
-     * @return AppBase
-     */
-    public function registerLocalLibPath(string $path) : AppBase
-    {
-        if (!is_object($this->autoload)) {
-            return $this;
-        }
-
-        $this->autoload->addLocalPath($path);
-        return $this;
-    }
-
-    /**
-     * @description get container
-     *
-     * @return ContainerInterface
-     */
-    public function getContainer() : ContainerInterface
-    {
-        return $this->container;
     }
 
     /**
