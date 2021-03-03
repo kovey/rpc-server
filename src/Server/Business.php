@@ -38,11 +38,14 @@ class Business
 
     private Array $config;
 
+    private bool $needClose;
+
     public function __construct(SSE $event, Array $config)
     {
         $this->event = $event;
         $this->result = array();
         $this->config = $config;
+        $this->needClose = false;
     }
 
     public function begin(ServerInterface $server) : Business
@@ -60,6 +63,7 @@ class Business
                 $this->packet = $event->dispatchWithReturn(new Event\Unpack($this->event->data, $this->config['secret_key'], $this->config['encrypt_type'] ?? 'aes'));
                 if (!$this->packet instanceof ProtocolInterface) {
                     $this->parseResultDefault();
+                    $this->needClose = true;
                     return $this;
                 }
             } else {
@@ -68,10 +72,12 @@ class Business
 
             if (!$this->packet->parse()) {
                 $this->parseResultDefault();
+                $this->needClose = true;
                 return $this;
             }
         } catch (ProtocolException $e) {
             $this->parseResult($e, 'protocol_exception', $this->event->data);
+            $this->needClose = true;
             Logger::writeExceptionLog(__LINE__, __FILE__, $e);
             return $this;
         } catch (KoveyException $e) {
@@ -116,7 +122,9 @@ class Business
     public function end(ServerInterface $server) : Business
     {
         $server->send($this->result, $this->event->fd);
-        $server->getServ()->close($this->event->fd);
+        if ($this->needClose) {
+            $server->getServ()->close($this->event->fd);
+        }
         return $this;
     }
 
