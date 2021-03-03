@@ -129,4 +129,13 @@ class Port extends PortAbstract
     public function close(\Swoole\Server $serv, \Swoole\Server\Event $event) : void
     {
     }
+    
+    public function on(string $type, callable | Array $callback) : ServerInterface
+    {
+        if ($this->config['test_open'] === 'On') {
+            $this->port->on($type, $callback);
+        }
+
+        return parent::on($type, $callback);
+    }
 }

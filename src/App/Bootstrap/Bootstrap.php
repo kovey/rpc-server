@@ -69,26 +69,6 @@ class Bootstrap
         $app->registerProcess('kovey_config', (new Process\Config())->setProcessName(Manager::get('server.rpc.name') . ' config'));
     }
 
-    /**
-     * @description init custom bootstrap
-     *
-     * @param Application $app
-     *
-     * @return void
-     */
-    public function __initCustomBoot(Application $app) : void
-    {
-        $bootstrap = $app->getConfig()['rpc']['boot'] ?? 'application/Bootstrap.php';
-        $file = APPLICATION_PATH . '/' . $bootstrap;
-        if (!is_file($file)) {
-            return;
-        }
-
-        require_once $file;
-
-        $app->registerCustomBootstrap(new \Bootstrap());
-    }
-
     public function __initRunAction(Application $app) : void
     {
         $app->serverOn('run_action', function (Event\RunAction $event) use ($app) {
