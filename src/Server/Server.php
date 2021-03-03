@@ -14,6 +14,7 @@ namespace Kovey\Rpc\Server;
 use Kovey\Rpc\Protocol\Json;
 use Kovey\Library\Protocol\ProtocolInterface;
 use Kovey\App\Components\ServerAbstract;
+use Kovey\App\Components\ServerInterface;
 use Kovey\Rpc\Event;
 
 class Server extends ServerAbstract
@@ -184,5 +185,14 @@ class Server extends ServerAbstract
      */
     public function close(\Swoole\Server $serv, \Swoole\Server\Event $event) : void
     {
+    }
+
+    public function on(string $type, callable | Array $callback) : ServerInterface
+    {
+        if ($this->config['test_open'] === 'On') {
+            $this->port->on($type, $callback);
+        }
+
+        return parent::on($type, $callback);
     }
 }
