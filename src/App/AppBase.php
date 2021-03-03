@@ -26,13 +26,6 @@ class AppBase extends App
     private static ?Application $instance = null;
 
     /**
-     * @description server
-     *
-     * @var ServerInterface
-     */
-    protected ServerInterface $server;
-
-    /**
      * @description get instance
      *
      * @param Array $config
