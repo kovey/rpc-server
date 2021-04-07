@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "15a2b8ae4657c0a5e465bc1710982330",
+    "content-hash": "933eb41099a2f4ea12403d4ec0724962",
     "packages": [
         {
             "name": "kovey/app",
-            "version": "dev-master",
+            "version": "v1.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/kovey/app.git",
-                "reference": "805befd634adf95efbe852b146825ec2c4b35e19"
+                "reference": "46767a42802060115fe33373d097a620e2c2ab85"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kovey/app/zipball/805befd634adf95efbe852b146825ec2c4b35e19",
-                "reference": "805befd634adf95efbe852b146825ec2c4b35e19",
+                "url": "https://api.github.com/repos/kovey/app/zipball/46767a42802060115fe33373d097a620e2c2ab85",
+                "reference": "46767a42802060115fe33373d097a620e2c2ab85",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -31,6 +31,7 @@
                 "kovey/container": "^1.0",
                 "kovey/event": "^1.0.2",
                 "kovey/process": "^1.0",
+                "kovey/sharding": "^1.0",
                 "php": "^8.0"
             },
             "require-dev": {
@@ -60,7 +61,7 @@
                 "kovey",
                 "php"
             ],
-            "time": "2021-03-02T09:25:11+00:00"
+            "time": "2021-04-07T06:52:42+00:00"
         },
         {
             "name": "kovey/connection",
@@ -119,16 +120,16 @@
         },
         {
             "name": "kovey/container",
-            "version": "v1.0.8",
+            "version": "v1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/kovey/container.git",
-                "reference": "d69ba8cde1d1e85896fe949d6f977eaf003e490c"
+                "reference": "00ee5d14250c903997eab80953d9ee5f95727151"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kovey/container/zipball/d69ba8cde1d1e85896fe949d6f977eaf003e490c",
-                "reference": "d69ba8cde1d1e85896fe949d6f977eaf003e490c",
+                "url": "https://api.github.com/repos/kovey/container/zipball/00ee5d14250c903997eab80953d9ee5f95727151",
+                "reference": "00ee5d14250c903997eab80953d9ee5f95727151",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -169,7 +170,7 @@
                 "kovey",
                 "php"
             ],
-            "time": "2021-01-29T02:34:14+00:00"
+            "time": "2021-03-22T05:37:06+00:00"
         },
         {
             "name": "kovey/db",
@@ -226,16 +227,16 @@
         },
         {
             "name": "kovey/event",
-            "version": "v1.0.2",
+            "version": "v1.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/kovey/event.git",
-                "reference": "7905b995ca04bc4839f5461daa23274265190795"
+                "reference": "7c2b47c70335ca07053b96ce74da35f9a1775773"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kovey/event/zipball/7905b995ca04bc4839f5461daa23274265190795",
-                "reference": "7905b995ca04bc4839f5461daa23274265190795",
+                "url": "https://api.github.com/repos/kovey/event/zipball/7c2b47c70335ca07053b96ce74da35f9a1775773",
+                "reference": "7c2b47c70335ca07053b96ce74da35f9a1775773",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -274,7 +275,7 @@
                 "kovey",
                 "php"
             ],
-            "time": "2021-02-02T04:14:11+00:00"
+            "time": "2021-03-18T10:36:27+00:00"
         },
         {
             "name": "kovey/library",
@@ -549,6 +550,62 @@
                 "rpc"
             ],
             "time": "2021-01-09T05:54:19+00:00"
+        },
+        {
+            "name": "kovey/sharding",
+            "version": "v1.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/kovey/sharding.git",
+                "reference": "58e5a64496f2d3a165899441e9f130fa60c4be7e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/kovey/sharding/zipball/58e5a64496f2d3a165899441e9f130fa60c4be7e",
+                "reference": "58e5a64496f2d3a165899441e9f130fa60c4be7e",
+                "shasum": "",
+                "mirrors": [
+                    {
+                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "kovey/connection": "^1.1",
+                "kovey/db": "^1.1",
+                "kovey/redis": "^1.0",
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Kovey\\Sharding\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Kovey",
+                    "email": "kovey@vip.qq.com",
+                    "role": "developer"
+                }
+            ],
+            "description": "Sharding Database Of The Kovey Framework",
+            "keywords": [
+                "database",
+                "framework",
+                "kovey",
+                "php",
+                "sharding"
+            ],
+            "time": "2021-01-18T08:34:30+00:00"
         },
         {
             "name": "kovey/validator",
@@ -1074,16 +1131,16 @@
         },
         {
             "name": "phpspec/prophecy",
-            "version": "1.12.2",
+            "version": "1.13.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpspec/prophecy.git",
-                "reference": "245710e971a030f42e08f4912863805570f23d39"
+                "reference": "be1996ed8adc35c3fd795488a653f4b518be70ea"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpspec/prophecy/zipball/245710e971a030f42e08f4912863805570f23d39",
-                "reference": "245710e971a030f42e08f4912863805570f23d39",
+                "url": "https://api.github.com/repos/phpspec/prophecy/zipball/be1996ed8adc35c3fd795488a653f4b518be70ea",
+                "reference": "be1996ed8adc35c3fd795488a653f4b518be70ea",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -1139,20 +1196,20 @@
                 "spy",
                 "stub"
             ],
-            "time": "2020-12-19T10:15:11+00:00"
+            "time": "2021-03-17T13:42:18+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
-            "version": "9.2.5",
+            "version": "9.2.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "f3e026641cc91909d421802dd3ac7827ebfd97e1"
+                "reference": "f6293e1b30a2354e8428e004689671b83871edde"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/f3e026641cc91909d421802dd3ac7827ebfd97e1",
-                "reference": "f3e026641cc91909d421802dd3ac7827ebfd97e1",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/f6293e1b30a2354e8428e004689671b83871edde",
+                "reference": "f6293e1b30a2354e8428e004689671b83871edde",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -1218,7 +1275,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2020-11-28T06:44:49+00:00"
+            "time": "2021-03-28T07:26:59+00:00"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -1471,16 +1528,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "9.5.2",
+            "version": "9.5.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "f661659747f2f87f9e72095bb207bceb0f151cb4"
+                "reference": "c73c6737305e779771147af66c96ca6a7ed8a741"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/f661659747f2f87f9e72095bb207bceb0f151cb4",
-                "reference": "f661659747f2f87f9e72095bb207bceb0f151cb4",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/c73c6737305e779771147af66c96ca6a7ed8a741",
+                "reference": "c73c6737305e779771147af66c96ca6a7ed8a741",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -1572,7 +1629,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2021-02-02T14:45:58+00:00"
+            "time": "2021-03-23T07:16:29+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -2706,16 +2763,16 @@
         },
         {
             "name": "webmozart/assert",
-            "version": "1.9.1",
+            "version": "1.10.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/webmozart/assert.git",
-                "reference": "bafc69caeb4d49c39fd0779086c03a3738cbb389"
+                "url": "https://github.com/webmozarts/assert.git",
+                "reference": "6964c76c7804814a842473e0c8fd15bab0f18e25"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webmozart/assert/zipball/bafc69caeb4d49c39fd0779086c03a3738cbb389",
-                "reference": "bafc69caeb4d49c39fd0779086c03a3738cbb389",
+                "url": "https://api.github.com/repos/webmozarts/assert/zipball/6964c76c7804814a842473e0c8fd15bab0f18e25",
+                "reference": "6964c76c7804814a842473e0c8fd15bab0f18e25",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -2725,17 +2782,22 @@
                 ]
             },
             "require": {
-                "php": "^5.3.3 || ^7.0 || ^8.0",
+                "php": "^7.2 || ^8.0",
                 "symfony/polyfill-ctype": "^1.8"
             },
             "conflict": {
                 "phpstan/phpstan": "<0.12.20",
-                "vimeo/psalm": "<3.9.1"
+                "vimeo/psalm": "<4.6.1 || 4.6.2"
             },
             "require-dev": {
-                "phpunit/phpunit": "^4.8.36 || ^7.5.13"
+                "phpunit/phpunit": "^8.5.13"
             },
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.10-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Webmozart\\Assert\\": "src/"
@@ -2757,14 +2819,12 @@
                 "check",
                 "validate"
             ],
-            "time": "2020-07-08T17:02:28+00:00"
+            "time": "2021-03-09T10:59:23+00:00"
         }
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "kovey/app": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
