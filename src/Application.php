@@ -13,6 +13,7 @@ namespace Kovey\Rpc;
 use Kovey\App\Components\ServerInterface;
 use Kovey\Library\Exception\KoveyException;
 use Kovey\Rpc\App\AppBase;
+use Kovey\Rpc\App\Bootstrap\BaseInit;
 
 class Application extends AppBase
 {
@@ -35,6 +36,12 @@ class Application extends AppBase
         }
 
         return self::$instance;
+    }
+
+    protected function init() : Application
+    {
+        $this->bootstrap->add(new BaseInit());
+        return $this;
     }
 
     /**

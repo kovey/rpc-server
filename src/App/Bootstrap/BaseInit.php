@@ -11,38 +11,16 @@
  */
 namespace Kovey\Rpc\App\Bootstrap;
 
-use Kovey\Process\Process;
 use Kovey\Library\Config\Manager;
-use Kovey\Logger\Logger;
-use Kovey\Logger\Monitor;
-use Kovey\Logger\Db;
-use Kovey\Container\Container;
 use Kovey\Rpc\Application;
 use Kovey\Rpc\Server\Server;
 use Kovey\Rpc\Manager\Router\Router;
-use Kovey\Process\UserProcess;
 use Kovey\Rpc\Protocol\Exception;
 use Kovey\Library\Util\Json;
 use Kovey\Rpc\Event;
 
-class Bootstrap
+class BaseInit
 {
-    /**
-     * @description init logger
-     *
-     * @param Application $app
-     *
-     * @return void
-     */
-    public function __initLogger(Application $app) : void
-    {
-        ko_change_process_name(Manager::get('server.rpc.name') . ' rpc root');
-        Logger::setLogPath(Manager::get('server.server.logger_dir'));
-        Logger::setCategory(Manager::get('server.rpc.name'));
-        Db::setLogDir(Manager::get('server.server.logger_dir'));
-        Monitor::setLogDir(Manager::get('server.server.logger_dir'));
-    }
-
     /**
      * @description init app
      *
@@ -52,21 +30,7 @@ class Bootstrap
      */
     public function __initApp(Application $app) : void
     {
-        $app->registerServer(new Server($app->getConfig()['server']))
-            ->registerContainer(new Container())
-            ->registerUserProcess(new UserProcess($app->getConfig()['server']['worker_num']));
-    }
-
-    /**
-     * @description init user custom process
-     *
-     * @param Application $app
-     *
-     * @return void
-     */
-    public function __initProcess(Application $app) : void
-    {
-        $app->registerProcess('kovey_config', (new Process\Config())->setProcessName(Manager::get('server.rpc.name') . ' config'));
+        $app->registerServer(new Server($app->getConfig()['server']));
     }
 
     public function __initRunAction(Application $app) : void
