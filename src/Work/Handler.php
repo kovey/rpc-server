@@ -14,6 +14,7 @@ namespace Kovey\Rpc\Work;
 use Kovey\App\Components\Work;
 use Kovey\Event\EventInterface;
 use Kovey\Rpc\Handler\HandlerAbstract;
+use Kovey\Connection\ManualCollectInterface;
 
 class Handler extends Work
 {
@@ -41,17 +42,29 @@ class Handler extends Work
 
         $instance->setClientIp($event->getClientIP());
 
-        if ($keywords['openTransaction']) {
-            $keywords['database']->getConnection()->beginTransaction();
-            try {
+        try {
+            if ($keywords['openTransaction']) {
+                $instance->database->beginTransaction();
+                try {
+                    $result = call_user_func(array($instance, $event->getMethod()), ...$event->getArgs());
+                    $instance->database->commit();
+                } catch (\Throwable $e) {
+                    $instance->database->rollBack();
+                    throw $e;
+                }
+            } else {
                 $result = call_user_func(array($instance, $event->getMethod()), ...$event->getArgs());
-                $keywords['database']->getConnection()->commit();
-            } catch (\Throwable $e) {
-                $keywords['database']->getConnection()->rollBack();
-                throw $e;
             }
-        } else {
-            $result = call_user_func(array($instance, $event->getMethod()), ...$event->getArgs());
+        } catch (\Throwable $e) {
+            throw $e;
+        } finally {
+            foreach ($keywords as $value) {
+                if (!$value instanceof ManualCollectInterface) {
+                    continue;
+                }
+
+                $value->collect();
+            }
         }
 
         return array(
