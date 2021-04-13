@@ -96,6 +96,8 @@ class Json implements ProtocolInterface
      */
     private string $clientLang;
 
+    private string $spanId;
+
     /**
      * @description construct
      *
@@ -121,6 +123,7 @@ class Json implements ProtocolInterface
         $this->traceId = '';
         $this->from = '';
         $this->clientLang = 'php';
+        $this->spanId = '';
     }
 
     /**
@@ -161,6 +164,7 @@ class Json implements ProtocolInterface
         $this->traceId = $this->clear['t'] ?? '';
         $this->from = $this->clear['f'] ?? '';
         $this->clientLang = $this->clear['c'] ?? 'php';
+        $this->spanId = $this->clear['s'] ?? '';
 
         return true;
     }
@@ -283,5 +287,10 @@ class Json implements ProtocolInterface
         $encrypt = substr($data, self::BODY_OFFSET, $length);
         $packet = Encryption::decrypt($encrypt, $secretKey, $type, $isPub);
         return json_decode($packet, true);
+    }
+
+    public function getSpanId() : string
+    {
+        return $this->spanId;
     }
 }

@@ -20,10 +20,13 @@ class Handler implements EventInterface
 
     private string $clientIp;
 
-    public function __construct(ProtocolInterface $packet, string $clientIp)
+    private string $spanId;
+
+    public function __construct(ProtocolInterface $packet, string $clientIp, string $spanId)
     {
         $this->clientIp = $clientIp;
         $this->packet = $packet;
+        $this->spanId = $spanId;
     }
 
     public function getClass() : string
@@ -49,6 +52,11 @@ class Handler implements EventInterface
     public function getClientIP() : string
     {
         return $this->clientIp;
+    }
+
+    public function getSpanId() : string
+    {
+        return $this->spanId;
     }
 
     /**

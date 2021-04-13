@@ -29,7 +29,7 @@ class Handler extends Work
     {
         $class = $this->handler . '\\' . ucfirst($event->getClass());
         $keywords = $this->container->getKeywords($class, $event->getMethod());
-        $instance = $this->container->get($class, $event->getTraceId(), $keywords['ext']);
+        $instance = $this->container->get($class, $event->getTraceId(), $event->getSpanId(), $keywords['ext']);
         if (!$instance instanceof HandlerAbstract) {
             return array(
                 'err' => sprintf('%s is not extends HandlerAbstract', ucfirst($class)),

@@ -40,6 +40,8 @@ class Business
 
     private bool $needClose;
 
+    private string $spanId;
+
     public function __construct(SSE $event, Array $config)
     {
         $this->event = $event;
@@ -53,6 +55,7 @@ class Business
         $this->clientIp = $server->getClientIP($this->event->fd);
         $this->begin = microtime(true);
         $this->reqTime = time();
+        $this->spanId = md5($this->event->fd . microtime(true));
         return $this;
     }
 
@@ -101,7 +104,7 @@ class Business
     private function handler(EventManager $event) : Business
     {
         try {
-            $this->result = $event->dispatchWithReturn(new Event\Handler($this->packet, $this->clientIp));
+            $this->result = $event->dispatchWithReturn(new Event\Handler($this->packet, $this->clientIp, $this->spanId));
             if ($this->result['code'] > 0) {
                 $this->result['packet'] = $this->packet->getClear();
             }
@@ -149,7 +152,9 @@ class Business
             'response' => $this->result['result'] ?? null,
             'traceId' => $this->packet->getTraceId(),
             'from' => $this->packet->getFrom(),
-            'end' => $end * 10000
+            'end' => $end * 10000,
+            'parentId' => $this->packet->getSpanId(),
+            'spanId' => $this->spanId
         ), $this->packet->getTraceId());
 
         return $this;
@@ -157,7 +162,7 @@ class Business
 
     private function parseResult(\Throwable $e, string $type, string $clear, int $code = -1) : void
     {
-        $this->result['err'] = $e->getMessage();
+        $this->result['err'] = $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
         $this->result['trace'] = $e->getTraceAsString();
         $this->result['type'] = $type;
         $this->result['code'] = $code < 0 ? $e->getCode() : $code;
