@@ -27,6 +27,8 @@ class HttpBusi
 
     private Array $result;
 
+    private string $spanId;
+
     public function __construct(Request $request, Response $response)
     {
         $this->request = $request;
@@ -45,13 +47,15 @@ class HttpBusi
 
         $this->httpCode = 200;
         $this->traceId = hash('sha256', uniqid($this->request->server['request_uri'], true) . random_int(1000000, 9999999));
+        $this->spanId = md5(uniqid($this->request->server['request_uri'], true));
+
         return $this;
     }
 
     public function run(EventManager $event) : HttpBusi
     {
         try {
-            $this->result = $event->dispatchWithReturn(new Event\RunAction($this->request, $this->traceId));
+            $this->result = $event->dispatchWithReturn(new Event\RunAction($this->request, $this->traceId, $this->spanId));
         } catch (\Throwable $e) {
             Logger::writeExceptionLog(__LINE__, __FILE__, $e, $this->traceId);
             $this->result['httpCode'] = 500;

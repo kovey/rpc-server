@@ -20,10 +20,13 @@ class RunAction implements EventInterface
 
     private string $traceId;
 
-    public function __construct(Request $request, string $traceId)
+    private string $spanId;
+
+    public function __construct(Request $request, string $traceId, string $spanId)
     {
         $this->traceId = $traceId;
         $this->request = $request;
+        $this->spanId = $spanId;
     }
 
     public function getRequest() : Request
@@ -34,6 +37,11 @@ class RunAction implements EventInterface
     public function getTraceId() : string
     {
         return $this->traceId;
+    }
+
+    public function getSpanId() : string
+    {
+        return $this->spanId;
     }
 
     /**

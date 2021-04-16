@@ -37,7 +37,7 @@ class BaseInit
     {
         $app->serverOn('run_action', function (Event\RunAction $event) use ($app) {
             $router = new Router($event->getRequest()->server['path_info'] ?? '/');
-            $instance = $app->getContainer()->get($router->getController(), $event->getTraceId());
+            $instance = $app->getContainer()->get($router->getController(), $event->getTraceId(), $event->getSpanId());
             $instance->data = strtolower($event->getRequest()->server['request_method']) === 'get' ? $event->getRequest()->get : $event->getRequest()->post;
             if (empty($instance->data)) {
                 if (!empty($event->getRequest()->getContent())) {
