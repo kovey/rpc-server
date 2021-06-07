@@ -90,16 +90,109 @@
         </div>
     <script type="text/javascript">
         var $ = function (id) {
-            var first = id.substr(0, 1);
-            if (first == '#') {
-                return document.getElementById(id.substr(1, id.length - 1));
-            }
+            var obj = {
+                identify: [],
+                type: 'SINGLE',
+                elements: [],
+                click: function (callback) {
+                    if (typeof callback != 'function') {
+                        return;
+                    }
 
-            if (first == '.') {
-                return document.getElementsByClassName(id.substr(1, id.length - 1));
-            }
+                    for (var i in this.elements) {
+                        this.elements[i].onclick = callback;
+                    }
+                },
+                constructor: function (id) {
+                    id = id.trim();
 
-            return null;
+                    this.parseType(id);
+                    if (this.type == 'ID' || this.type == 'CLASS') {
+                        this.identify = id.substr(1, id.length - 1);
+                    } else {
+                        this.identify = id;
+                    }
+                    this.parseElements();
+
+                    return this;
+                },
+                parseId: function (id) {
+                    var info = id.split(',');
+                    if (info.length > 1) {
+                        this.type = 'MULTI';
+                        for (var i in info) {
+                            this.parseType(info[i].trim());
+                        }
+                        return;
+                    }
+
+                    var sinfo = id.split(' ');
+                    if (sinfo.length > 0) {
+                        this.type = 'PARENT_CHILD';
+                        for (var i in sinfo) {
+                            this.parseType(sinfo[i].trim());
+                        }
+
+                        return;
+                    }
+
+                    this.type = 'SINGLE';
+                    this.parseType(id);
+                },
+                parseType: function(id) {
+                    var first = id.substr(0, 1);
+                    if (first == '#') {
+                        this.identify.push({
+                            id: id.substr(1, id.length - 1),
+                            type: 'ID'
+                        });
+                        return;
+                    } else if (first == '.') {
+                        this.identify.push({
+                            id: id.substr(1, id.length - 1),
+                            type: 'CLASS'
+                        });
+                    } else {
+                        this.identify.push({
+                            id: id,
+                            type: 'TAG_OR_NAME'
+                        });
+                    }
+                },
+                getElements: function (identify) {
+                    if (identify.type == 'ID') {
+                        var elements = [];
+                        elements.push(document.getElementById(identify.identify));
+                        return elements;
+                    }
+
+                    if (identify.type == 'CLASS') {
+                        return document.getElementsByClassName(identify.identify);
+                    }
+
+                    es = document.getElementsByTagName(identify.identify);
+                    if (es.length == 0) {
+                        es = document.getElementsByName(identify.identify);
+                    }
+
+                    return es;
+                },
+                parseSingle: function (identify) {
+                    var elements = this.getElements(identify);
+                    for (var i in elements) {
+                        this.elements.push(elements[i]);
+                    }
+                },
+                parseUpDown: function () {
+                    for (var i in this.identify) {
+                        var elements = this.getElements(this.identify[i]);
+                        for (var j in elements) {
+                        }
+                    }
+                }
+            };
+
+            return obj.constructor(id);
         }
 
         function formatArgs(item) {
@@ -171,6 +264,8 @@
             options.type = (options.type || 'GET').toUpperCase();
             options.dataType = options.dataType || 'json';
             options.contentType = options.contentType || 'application/x-www-form-urlencoded';
+            options.timeout = options.timeout || 30000;
+            options.headers = options.headers || {};
             params = formatParams(options.data, options.contentType);
             var xhr;
             if (window.XMLHttpRequest) {
@@ -179,11 +274,27 @@
                 xhr=ActiveXObject('Microsoft.XMLHTTP');
             }
 
-            xhr.onreadystatechange = function () {
+            xhr.timeout = options.timeout;
+
+            xhr.ontimeout = function () {
+                if (typeof options.error == 'function') {
+                    options.error(xhr.status, xhr.responseText, shr.responseXML);
+                }
+            }
+
+            xhr.onloadend = function () {
                 if (typeof options.complete == 'function') {
                     options.complete(xhr.status, xhr.responseText, xhr.responseXML);
                 }
+            }
 
+            xhr.onprogress = function (e) {
+                if (typeof options.progress == 'function') {
+                    options.progress(e.loaded, e.total);
+                }
+            }
+
+            xhr.onreadystatechange = function () {
                 if (xhr.readyState == 4) {
                     if (xhr.status >= 200 && xhr. status < 300) {
                         if (typeof options.success == 'function') {
@@ -195,6 +306,10 @@
                     if (typeof options.error == 'function') {
                         options.error(xhr.status, xhr.responseText, xhr.responseXML);
                     }
+                } else if (xhr.readyState == 1) {
+                    each(options.headers, function (index, value) {
+                        xhr.setRequestHeader(index, value);
+                    });
                 }
             }
 
@@ -209,6 +324,16 @@
                 xhr.open('POST', options.url, true);
                 xhr.setRequestHeader("Content-Type", options.contentType);
                 xhr.send(params);
+            }
+        }
+
+        function each(data, callback) {
+            if (typeof callback != 'function') {
+                return;
+            }
+
+            for (var i in data) {
+                callback(i, data[i]);
             }
         }
 

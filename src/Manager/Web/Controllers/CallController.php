@@ -38,7 +38,7 @@ class CallController extends Controller
 
         $class = 'Handler\\' . $service;
         $keywords = $app->getContainer()->getKeywords($class, $method);
-        $obj = $app->getContainer()->get($class, hash('sha256', time()), $keywords['ext']);
+        $obj = $app->getContainer()->get($class, hash('sha256', time()), md5(time()), $keywords['ext']);
         $params = array();
         foreach ($args as $arg) {
             if ($arg['type'] != 'array') {
