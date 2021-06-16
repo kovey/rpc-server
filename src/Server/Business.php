@@ -138,7 +138,7 @@ class Business
             'delay' => round(($end - $this->begin) * 1000, 2),
             'request_time' => $this->begin * 10000,
             'type' => $this->result['type'],
-            'err' => $this->result['err'],
+            'err' => $this->result['error'] ?? '',
             'trace' => $this->result['trace'],
             'service' => $this->config['name'],
             'service_type' => 'rpc',
@@ -162,7 +162,8 @@ class Business
 
     private function parseResult(\Throwable $e, string $type, string $clear, int $code = -1) : void
     {
-        $this->result['err'] = $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
+        $this->result['error'] = $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
+        $this->result['err'] = $e->getMessage();
         $this->result['trace'] = $e->getTraceAsString();
         $this->result['type'] = $type;
         $this->result['code'] = $code < 0 ? $e->getCode() : $code;
@@ -173,6 +174,7 @@ class Business
     {
         $this->result = array(
             'err' => 'parse data error',
+            'error' => 'parse data error',
             'type' => 'exception',
             'trace' => '',
             'code' => 1000,
