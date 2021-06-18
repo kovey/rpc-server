@@ -15,6 +15,7 @@ use Kovey\App\Components\Work;
 use Kovey\Event\EventInterface;
 use Kovey\Rpc\Handler\HandlerAbstract;
 use Kovey\Connection\ManualCollectInterface;
+use Kovey\Db\SqlInterface;
 
 class Handler extends Work
 {
@@ -58,6 +59,15 @@ class Handler extends Work
         } catch (\Throwable $e) {
             throw $e;
         } finally {
+            try {
+                if (isset($instance->database) && $instance->database instanceof DbInterface) {
+                    if ($instance->database->inTransaction()) {
+                        $instance->database->rollBack();
+                    }
+                }
+            } catch (\Throwable $e) {
+            }
+
             foreach ($keywords as $value) {
                 if (!$value instanceof ManualCollectInterface) {
                     continue;

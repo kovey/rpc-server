@@ -110,7 +110,7 @@ class Business
             }
         } catch (BusiException $e) {
             $this->parseResult($e, 'busi_exception', $this->packet->getClear());
-            Logger::writeExceptionLog(__LINE__, __FILE__, $e, $this->packet->getTraceId());
+            Logger::writeBusiException(__LINE__, __FILE__, $e, $this->packet->getTraceId());
         } catch (KoveyException $e) {
             Logger::writeExceptionLog(__LINE__, __FILE__, $e, $this->packet->getTraceId());
             $this->parseResult($e, 'kovey_exception', $this->packet->getClear(), 1000);
