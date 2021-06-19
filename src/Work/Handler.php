@@ -15,7 +15,7 @@ use Kovey\App\Components\Work;
 use Kovey\Event\EventInterface;
 use Kovey\Rpc\Handler\HandlerAbstract;
 use Kovey\Connection\ManualCollectInterface;
-use Kovey\Db\SqlInterface;
+use Kovey\Db\DbInterface;
 
 class Handler extends Work
 {
