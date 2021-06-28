@@ -18,6 +18,7 @@ use Kovey\Library\Exception\BusiException;
 use Kovey\Library\Exception\KoveyException;
 use Kovey\Library\Exception\ProtocolException;
 use Kovey\Library\Server\PortInterface;
+use Kovey\Library\Util\Version;
 use Kovey\Logger\Logger;
 use Kovey\Rpc\Event;
 use Kovey\Event\Dispatch;
@@ -254,6 +255,9 @@ class Port implements PortInterface
         }
 
         $this->handler($proto, $event->fd);
+        if (Version::compare($proto->getVersion(), '1.0') != Version::GT) {
+            $serv->close($event->fd);
+        }
     }
 
     /**
