@@ -363,8 +363,6 @@ class Server implements PortInterface
         }
 
         $this->handler($proto, $fd);
-
-        $serv->close($fd);
     }
 
     /**
