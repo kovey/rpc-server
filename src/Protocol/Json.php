@@ -128,7 +128,7 @@ class Json implements ProtocolInterface
         $this->traceId = '';
         $this->from = '';
         $this->clientLang = 'php';
-        $this->version = '2.0';
+        $this->version = '1.0';
     }
 
     /**
@@ -169,7 +169,7 @@ class Json implements ProtocolInterface
         $this->traceId = $this->clear['t'] ?? '';
         $this->from = $this->clear['f'] ?? '';
         $this->clientLang = $this->clear['c'] ?? 'php';
-        $this->version = $this->clear['v'] ?? '2.0';
+        $this->version = $this->clear['v'] ?? '1.0';
 
         return true;
     }
