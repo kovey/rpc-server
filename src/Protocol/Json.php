@@ -136,6 +136,7 @@ class Json implements ProtocolInterface
         $this->from = '';
         $this->clientLang = 'php';
         $this->spanId = '';
+        $this->version = '1.0';
     }
 
     /**
