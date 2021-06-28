@@ -96,7 +96,19 @@ class Json implements ProtocolInterface
      */
     private string $clientLang;
 
+    /**
+     * @description span id
+     *
+     * @var string
+     */
     private string $spanId;
+
+    /**
+     * @description client version
+     *
+     * @var string
+     */
+    private string $version;
 
     /**
      * @description construct
@@ -165,6 +177,7 @@ class Json implements ProtocolInterface
         $this->from = $this->clear['f'] ?? '';
         $this->clientLang = $this->clear['c'] ?? 'php';
         $this->spanId = $this->clear['s'] ?? '';
+        $this->version = $this->clear['v'] ?? '1.0';
 
         return true;
     }
@@ -237,6 +250,16 @@ class Json implements ProtocolInterface
     public function getClientLang() : string
     {
         return $this->clientLang;
+    }
+
+    /**
+     * @description get client version
+     *
+     * @return string
+     */
+    public function getVersion() : string
+    {
+        return $this->version;
     }
 
     /**

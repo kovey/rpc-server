@@ -19,6 +19,8 @@ use Kovey\Rpc\Protocol\Json;
 use Kovey\Library\Exception\BusiException;
 use Kovey\Library\Exception\KoveyException;
 use Kovey\Library\Exception\ProtocolException;
+use Kovey\Library\Util\Version;
+use Kovey\Rpc\Version\Version AS VER;
 use Kovey\Logger\Logger;
 use Kovey\App\Components\ServerInterface;
 
@@ -119,6 +121,7 @@ class Business
             $this->parseResult($e, 'exception', $this->packet->getClear(), 1000);
         }
 
+        $this->needClose = Version::compare($this->packet->getVersion(), '1.0') != Version::GT;
         return $this;
     }
 
@@ -154,7 +157,9 @@ class Business
             'from' => $this->packet->getFrom(),
             'end' => $end * 10000,
             'parentId' => $this->packet->getSpanId(),
-            'spanId' => $this->spanId
+            'spanId' => $this->spanId,
+            'client_version' => $this->packet->getVersion(),
+            'server_version' => VER::VERSION
         ), $this->packet->getTraceId());
 
         return $this;
@@ -168,6 +173,7 @@ class Business
         $this->result['type'] = $type;
         $this->result['code'] = $code < 0 ? $e->getCode() : $code;
         $this->result['packet'] = $clear;
+        $this->result['version'] = VER::VERSION;
     }
 
     private function parseResultDefault() : void
@@ -178,7 +184,8 @@ class Business
             'type' => 'exception',
             'trace' => '',
             'code' => 1000,
-            'packet' => $this->event->data
+            'packet' => $this->event->data,
+            'version' => VER::VERSION
         );
     }
 }
