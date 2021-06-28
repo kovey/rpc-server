@@ -97,6 +97,13 @@ class Json implements ProtocolInterface
     private string $clientLang;
 
     /**
+     * @description client version
+     *
+     * @var string
+     */
+    private string $version;
+
+    /**
      * @description 构造函数
      *
      * @param string $body
@@ -121,6 +128,7 @@ class Json implements ProtocolInterface
         $this->traceId = '';
         $this->from = '';
         $this->clientLang = 'php';
+        $this->version = '1.0';
     }
 
     /**
@@ -161,6 +169,7 @@ class Json implements ProtocolInterface
         $this->traceId = $this->clear['t'] ?? '';
         $this->from = $this->clear['f'] ?? '';
         $this->clientLang = $this->clear['c'] ?? 'php';
+        $this->version = $this->clear['v'] ?? '1.0';
 
         return true;
     }
@@ -233,6 +242,16 @@ class Json implements ProtocolInterface
     public function getClientLang() : string
     {
         return $this->clientLang;
+    }
+
+    /**
+     * @description get client version
+     *
+     * @return string
+     */
+    public function getVersion() : string
+    {
+        return $this->version;
     }
 
     /**
