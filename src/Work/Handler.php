@@ -15,6 +15,7 @@ use Kovey\App\Components\Work;
 use Kovey\Event\EventInterface;
 use Kovey\Rpc\Handler\HandlerAbstract;
 use Kovey\Connection\ManualCollectInterface;
+use Kovey\Container\Keyword\Fields;
 
 class Handler extends Work
 {
@@ -43,13 +44,13 @@ class Handler extends Work
         $instance->setClientIp($event->getClientIP());
 
         try {
-            if ($keywords['openTransaction']) {
-                $instance->database->beginTransaction();
+            if ($keywords[Fields::KEYWORD_OPEN_TRANSACTION]) {
+                $keywords[Fields::KEYWORD_DATABASE]->beginTransaction();
                 try {
                     $result = call_user_func(array($instance, $event->getMethod()), ...$event->getArgs());
-                    $instance->database->commit();
+                    $keywords[Fields::KEYWORD_DATABASE]->commit();
                 } catch (\Throwable $e) {
-                    $instance->database->rollBack();
+                    $keywords[Fields::KEYWORD_DATABASE]->rollBack();
                     throw $e;
                 }
             } else {
