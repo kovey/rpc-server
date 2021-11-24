@@ -127,7 +127,7 @@ class Business
 
     public function end(ServerInterface $server) : Business
     {
-        $server->send($this->result, $this->event->fd);
+        $server->send($this->result, $this->event->fd, $this->packet->getCompress());
         if ($this->needClose) {
             $server->getServ()->close($this->event->fd);
         }

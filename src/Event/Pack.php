@@ -21,11 +21,14 @@ class Pack implements EventInterface
 
     private string $type;
 
-    public function __construct(Array $packet, string $key, string $type)
+    private int $compress;
+
+    public function __construct(Array $packet, string $key, string $type, int $compress)
     {
         $this->packet = $packet;
         $this->key = $key;
         $this->type = $type;
+        $this->compress = $compress;
     }
 
     public function getPacket() : Array
@@ -61,5 +64,10 @@ class Pack implements EventInterface
     public function stopPropagation() : EventInterface
     {
         return $this;
+    }
+
+    public function getCompress() : int
+    {
+        return $this->compress;
     }
 }

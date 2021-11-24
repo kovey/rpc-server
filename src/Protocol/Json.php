@@ -7,8 +7,6 @@
  *
  * @time        2019-11-16 18:14:53
  *
- * todo
- *
  * @author      kovey
  */
 namespace Kovey\Rpc\Protocol;
@@ -21,10 +19,6 @@ use Kovey\Library\Util\Json as JS;
 
 class Json implements ProtocolInterface
 {
-    const COMPRESS_GZIP = 'gzip';
-
-    const COMPRESS_NO = 'no';
-
     /**
      * @description path
      *
@@ -117,11 +111,11 @@ class Json implements ProtocolInterface
     private string $version;
 
     /**
-     * @description compress flags
+     * @description compress
      *
      * @var string
      */
-    private static string $compress = self::COMPRESS_NO;
+    private string $compress;
 
     /**
      * @description construct
@@ -150,6 +144,7 @@ class Json implements ProtocolInterface
         $this->clientLang = 'php';
         $this->spanId = '';
         $this->version = '1.0';
+        $this->compress = self::COMPRESS_NO;
     }
 
     /**
@@ -159,7 +154,9 @@ class Json implements ProtocolInterface
      */
     public function parse() : bool
     {
-        $this->clear = self::unpack($this->body, $this->secretKey, $this->encryptType, $this->isPub);
+        $info = self::unpack($this->body, $this->secretKey, $this->encryptType, $this->isPub);
+        $this->compress = $info['compress'];
+        $this->clear = $info['packet'];
         if (empty($this->clear)) {
             return false;
         }
@@ -192,6 +189,7 @@ class Json implements ProtocolInterface
         $this->clientLang = $this->clear['c'] ?? 'php';
         $this->spanId = $this->clear['s'] ?? '';
         $this->version = $this->clear['v'] ?? '1.0';
+        $this->compress = $this->clear['g'] ?? self::COMPRESS_NO;
 
         return true;
     }
@@ -291,14 +289,16 @@ class Json implements ProtocolInterface
      *
      * @throws KoveyException
      */
-    public static function pack(Array $packet, string $secretKey, string $type = 'aes', bool $isPub = false) : string
+    public static function pack(Array $packet, string $secretKey, string $type = 'aes', bool $isPub = false, int $compress = self::COMPRESS_NO) : string
     {
         $ps = json_encode($packet);
-        if (self::$compress == self::COMPRESS_GZIP) {
-            $ps = gzcompress($ps);
-        }
 
         $data = Encryption::encrypt($ps, $secretKey, $type, $isPub);
+        if ($compress == self::COMPRESS_GZIP) {
+            $data = gzcompress($data);
+            return pack(self::PACK_TYPE, strlen($data)) . pack(self::PACK_TYPE, $compress) . $data;
+        }
+
         return pack(self::PACK_TYPE, strlen($data)) . $data;
     }
 
@@ -319,19 +319,28 @@ class Json implements ProtocolInterface
      */
     public static function unpack(string $data, string $secretKey, string $type = 'aes', bool $isPub = false) : Array
     {
-        $info = unpack(self::PACK_TYPE, substr($data, self::LENGTH_OFFSET, self::HEADER_LENGTH));
-        $length = $info[1] ?? 0;
+        $info = unpack(self::PACK_TYPE . 'a/' . self::PACK_TYPE . 'b', substr($data, self::LENGTH_OFFSET, self::HEADER_LENGTH_NEW));
+        $compress = $info['b'];
+        if ($compress != self::COMPRESS_GZIP) {
+            $info = unpack(self::PACK_TYPE . 'a', substr($data, self::LENGTH_OFFSET, self::HEADER_LENGTH));
+            $compress = self::COMPRESS_NO;
+        }
 
+        $length = $info['a'];
         if (!Util::isNumber($length) || $length < 1) {
             throw new ProtocolException('unpack packet failure', 1005, 'pack_error');
         }
 
-        $encrypt = substr($data, self::BODY_OFFSET, $length);
-        $packet = Encryption::decrypt($encrypt, $secretKey, $type, $isPub);
-        if (self::$compress == self::COMPRESS_GZIP) {
-            $packet = gzuncompress($packet, 2097152);
+        $encrypt = substr($data, $compress == self::COMPRESS_NO ? self::BODY_OFFSET : self::HEADER_LENGTH_NEW, $length);
+        if ($compress == self::COMPRESS_GZIP) {
+            $encrypt = gzuncompress($encrypt, self::COMPRESS_LENGTH);
         }
-        return json_decode($packet, true);
+
+        $packet = Encryption::decrypt($encrypt, $secretKey, $type, $isPub);
+        return array(
+            'compress' => $compress,
+            'packet' => json_decode($packet, true)
+        );
     }
 
     public function getSpanId() : string
@@ -339,11 +348,8 @@ class Json implements ProtocolInterface
         return $this->spanId;
     }
 
-    /**
-     * 设置压缩
-     */
-    public static function setCompress(string $compress)
+    public function getCompress() : int
     {
-        self::$compress = $compress;
+        return $this->compress;
     }
 }

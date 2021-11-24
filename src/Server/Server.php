@@ -144,7 +144,7 @@ class Server extends ServerAbstract
      *
      * @return bool
      */
-    public function send(Array $packet, int $fd) : bool
+    public function send(Array $packet, int $fd, int $compress) : bool
     {
         if (!$this->serv->exist($fd)) {
             return false;
@@ -154,7 +154,7 @@ class Server extends ServerAbstract
         if ($this->event->listened('pack')) {
             $data = $this->event->dispatchWithReturn(new Event\Pack($packet, $this->config['secret_key'], $this->config['encrypt_type'] ?? 'aes'));
         } else {
-            $data = Json::pack($packet, $this->config['secret_key'], $this->config['encrypt_type'] ?? 'aes');
+            $data = Json::pack($packet, $this->config['secret_key'], $this->config['encrypt_type'] ?? 'aes', false, $compress);
         }
         if (!$data) {
             return false;

@@ -20,6 +20,7 @@
     "require": {
         "php": "^8.0",
         "ext-swoole": "^4.6.0",
+        "ext-zlib": ">=1.0",
         "kovey/library": "^2.1",
         "kovey/logger": "^2.0",
         "kovey/app": "^2.0"

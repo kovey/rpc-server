@@ -30,7 +30,8 @@ class JsonTest extends TestCase
         $this->assertTrue(!empty($encrypt));
 
         $decrypt = Json::unpack($encrypt, $key);
-        $this->assertEquals($data, $decrypt);
+        $this->assertEquals(0, $decrypt['compress']);
+        $this->assertEquals($data, $decrypt['packet']);
     }
 
     public function testPackAnUnpackRsa()
@@ -44,7 +45,7 @@ class JsonTest extends TestCase
         $this->assertTrue(!empty($encrypt));
 
         $decrypt = Json::unpack($encrypt, __DIR__ . '/../crt/private.pem', 'rsa', false);
-        $this->assertEquals($data, $decrypt);
+        $this->assertEquals($data, $decrypt['packet']);
     }
 
     public function testUnpackToJsonObject()
@@ -62,5 +63,24 @@ class JsonTest extends TestCase
         $this->assertEquals('Kovey', $json->getPath());
         $this->assertEquals('framework', $json->getMethod());
         $this->assertEquals(array('test', array('a' => 'b')), $json->getArgs());
+        $this->assertEquals(0, $json->getCompress());
+    }
+
+    public function testPackAnUnpackAesCompress()
+    {
+        $data = array(
+            'kovey' => 'framework',
+            'rpc' => 'server',
+            'time' => time()
+        );
+
+        $key = 'U0ZLf0s8NQgggMrBi16KDeUyPBgzLPWALhohHKRRyxK';
+
+        $encrypt = Json::pack($data, $key, 'aes', false, Json::COMPRESS_GZIP);
+        $this->assertTrue(!empty($encrypt));
+
+        $decrypt = Json::unpack($encrypt, $key);
+        $this->assertEquals(1, $decrypt['compress']);
+        $this->assertEquals($data, $decrypt['packet']);
     }
 }
