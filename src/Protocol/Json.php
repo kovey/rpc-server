@@ -189,7 +189,6 @@ class Json implements ProtocolInterface
         $this->clientLang = $this->clear['c'] ?? 'php';
         $this->spanId = $this->clear['s'] ?? '';
         $this->version = $this->clear['v'] ?? '1.0';
-        $this->compress = $this->clear['g'] ?? self::COMPRESS_NO;
 
         return true;
     }
