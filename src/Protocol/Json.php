@@ -7,6 +7,8 @@
  *
  * @time        2019-11-16 18:14:53
  *
+ * todo
+ *
  * @author      kovey
  */
 namespace Kovey\Rpc\Protocol;
@@ -19,6 +21,10 @@ use Kovey\Library\Util\Json as JS;
 
 class Json implements ProtocolInterface
 {
+    const COMPRESS_GZIP = 'gzip';
+
+    const COMPRESS_NO = 'no';
+
     /**
      * @description path
      *
@@ -109,6 +115,13 @@ class Json implements ProtocolInterface
      * @var string
      */
     private string $version;
+
+    /**
+     * @description compress flags
+     *
+     * @var string
+     */
+    private static string $compress = self::COMPRESS_NO;
 
     /**
      * @description construct
@@ -280,7 +293,12 @@ class Json implements ProtocolInterface
      */
     public static function pack(Array $packet, string $secretKey, string $type = 'aes', bool $isPub = false) : string
     {
-        $data = Encryption::encrypt(json_encode($packet), $secretKey, $type, $isPub);
+        $ps = json_encode($packet);
+        if (self::$compress == self::COMPRESS_GZIP) {
+            $ps = gzcompress($ps);
+        }
+
+        $data = Encryption::encrypt($ps, $secretKey, $type, $isPub);
         return pack(self::PACK_TYPE, strlen($data)) . $data;
     }
 
@@ -310,11 +328,22 @@ class Json implements ProtocolInterface
 
         $encrypt = substr($data, self::BODY_OFFSET, $length);
         $packet = Encryption::decrypt($encrypt, $secretKey, $type, $isPub);
+        if (self::$compress == self::COMPRESS_GZIP) {
+            $packet = gzuncompress($packet, 2097152);
+        }
         return json_decode($packet, true);
     }
 
     public function getSpanId() : string
     {
         return $this->spanId;
+    }
+
+    /**
+     * 设置压缩
+     */
+    public static function setCompress(string $compress)
+    {
+        self::$compress = $compress;
     }
 }

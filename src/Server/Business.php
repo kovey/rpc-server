@@ -159,7 +159,9 @@ class Business
             'parentId' => $this->packet->getSpanId(),
             'spanId' => $this->spanId,
             'client_version' => $this->packet->getVersion(),
-            'server_version' => VER::VERSION
+            'server_version' => VER::VERSION,
+            'client_lang' => $this->packet->getClientLang(),
+            'server_lang' => 'php'
         ), $this->packet->getTraceId());
 
         return $this;

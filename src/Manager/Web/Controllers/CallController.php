@@ -64,9 +64,9 @@ class CallController extends Controller
                 return Code::dump($obj->$method(...$params));
             }
         } catch (\Exception $e) {
-            return Code::dump($e->getMessage() . PHP_EOL . $e->getTraceAsString());
+            return Code::dump(sprintf("%s in %s on %d", $e->getMessage(), $e->getFile(), $e->getLine()) . PHP_EOL . $e->getTraceAsString());
         } catch (\Throwable $e) {
-            return Code::dump($e->getMessage() . PHP_EOL . $e->getTraceAsString());
+            return Code::dump(sprintf("%s in %s on %d", $e->getMessage(), $e->getFile(), $e->getLine()) . PHP_EOL . $e->getTraceAsString());
         }
     }
 
