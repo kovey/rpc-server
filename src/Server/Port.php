@@ -85,7 +85,7 @@ class Port extends PortAbstract
      *
      * @return bool
      */
-    public function send(Array $packet, int $fd) : bool
+    public function send(Array $packet, int $fd, int $compress) : bool
     {
         if (!$this->serv->exist($fd)) {
             return false;
@@ -96,7 +96,7 @@ class Port extends PortAbstract
             $event = new Event\Pack($packet, $this->config['secret_key'], $this->config['encrypt_type'] ?? 'aes');
             $data = $this->event->dispatchWithReturn($event);
         } else {
-            $data = Json::pack($packet, $this->config['secret_key'], $this->config['encrypt_type'] ?? 'aes');
+            $data = Json::pack($packet, $this->config['secret_key'], $this->config['encrypt_type'] ?? 'aes', false, $compress);
         }
 
         if (!$data) {
