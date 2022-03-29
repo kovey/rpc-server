@@ -295,7 +295,7 @@ class Json implements ProtocolInterface
         $data = Encryption::encrypt($ps, $secretKey, $type, $isPub);
         if ($compress == self::COMPRESS_GZIP) {
             $data = gzcompress($data);
-            return pack(self::PACK_TYPE, strlen($data)) . pack(self::PACK_TYPE, $compress) . $data;
+            return pack(self::PACK_TYPE, strlen($data) + 4) . pack(self::PACK_TYPE, $compress) . $data;
         }
 
         return pack(self::PACK_TYPE, strlen($data)) . $data;
@@ -330,7 +330,13 @@ class Json implements ProtocolInterface
             throw new ProtocolException('unpack packet failure', 1005, 'pack_error');
         }
 
-        $encrypt = substr($data, $compress == self::COMPRESS_NO ? self::BODY_OFFSET : self::HEADER_LENGTH_NEW, $length);
+        $offset = self::BODY_OFFSET;
+        if ($compress == self::COMPRESS_GZIP) {
+            $length -= 4;
+            $offset = self::HEADER_LENGTH_NEW;
+        }
+
+        $encrypt = substr($data, $offset, $length);
         if ($compress == self::COMPRESS_GZIP) {
             $encrypt = gzuncompress($encrypt, self::COMPRESS_LENGTH);
         }
