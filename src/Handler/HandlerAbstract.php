@@ -21,7 +21,7 @@ abstract class HandlerAbstract
 
     public function __construct() 
     {
-        $this->stack = $stack;
+        $this->stack = new Stack();
     }
 
     protected function init() : void
