@@ -24,7 +24,7 @@ abstract class HandlerAbstract
         $this->stack = new Stack();
     }
 
-    protected function init() : void
+    public function init() : void
     {
     }
 

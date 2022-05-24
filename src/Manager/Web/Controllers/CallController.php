@@ -38,7 +38,10 @@ class CallController extends Controller
 
         $class = 'Handler\\' . $service;
         $keywords = $app->getContainer()->getKeywords($class, $method);
-        $obj = $app->getContainer()->get($class, hash('sha256', time()), md5(time()), $keywords['ext']);
+        $traceId = hash('sha256', time());
+        $obj = $app->getContainer()->get($class, $traceId, md5(time()), $keywords['ext']);
+        $obj->init();
+        $obj->getStack()->setTraceId($traceId);
         $params = array();
         foreach ($args as $arg) {
             if ($arg['type'] != 'array') {
@@ -67,6 +70,8 @@ class CallController extends Controller
             return Code::dump(sprintf("%s in %s on %d", $e->getMessage(), $e->getFile(), $e->getLine()) . PHP_EOL . $e->getTraceAsString());
         } catch (\Throwable $e) {
             return Code::dump(sprintf("%s in %s on %d", $e->getMessage(), $e->getFile(), $e->getLine()) . PHP_EOL . $e->getTraceAsString());
+        } finally {
+            $obj->getStack()->write();
         }
     }
 

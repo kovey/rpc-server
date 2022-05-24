@@ -13,6 +13,13 @@ namespace Kovey\Rpc\Manager\Web\Tools;
 
 class Rf
 {
+    private static Array $excludes = array(
+        '__construct' => 1,
+        '__destruct' => 1,
+        'setClientIp' => 1,
+        'getStack' => 1,
+        'init' => 1
+    );
     /**
      * @description get interface info
      *
@@ -30,9 +37,7 @@ class Rf
 
         $result = array();
         foreach ($methods as $method) {
-            if ($method->getName() === '__construct'
-                || $method->getName() === '__destruct'
-            ) {
+            if (isset(self::$excludes[$method->getName()])) {
                 continue;
             }
 
