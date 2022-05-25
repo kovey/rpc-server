@@ -44,7 +44,7 @@ class Handler extends Work
         try {
             $instance->init();
             $instance->setClientIp($event->getClientIP());
-            $instance->getStack()->setTraceId($event->getTraceId());
+            $instance->getStack()?->setTraceId($event->getTraceId());
 
             if ($keywords[Fields::KEYWORD_OPEN_TRANSACTION]) {
                 $keywords[Fields::KEYWORD_DATABASE]->beginTransaction();
@@ -68,7 +68,7 @@ class Handler extends Work
 
                 $value->collect();
             }
-            $instance->getStack()->write();
+            $instance->getStack()?->write();
         }
 
         return array(

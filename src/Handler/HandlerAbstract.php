@@ -11,21 +11,18 @@
  */
 namespace Kovey\Rpc\Handler;
 
+use Kovey\Logger\Trace\StackInterface;
 use Kovey\Logger\Trace\Stack;
 
 abstract class HandlerAbstract
 {
     protected string $clientIp;
 
-    protected Stack $stack;
-
-    public function __construct() 
-    {
-        $this->stack = new Stack();
-    }
+    protected StackInterface $stack;
 
     public function init() : void
     {
+        $this->stack = new Stack();
     }
 
     public function setClientIp(string $clientIp)
@@ -33,7 +30,7 @@ abstract class HandlerAbstract
         $this->clientIp = $clientIp;
     }
 
-    public function getStack() : Stack
+    public function getStack() : ?StackInterface
     {
         return $this->stack;
     }
