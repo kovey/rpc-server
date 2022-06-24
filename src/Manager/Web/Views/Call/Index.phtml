@@ -69,7 +69,7 @@
                                     <option value="false" <?php echo ($arg['default'] == 'false' ? 'selected' : '');?>>false</option>
                                 </select>
                                 <?php else: ?>
-                                <input type="text" class="form-control php-params" id="php-args-<?php echo str_replace('$', '', $arg['param'])?>" placeholder="<?php echo $arg['type']; ?>"  style="display:initial;width:84%;" value="<?php echo ($arg['type'] == 'array' && !empty($arg['default']) ? json_encode($arg['default']) : $arg['default']); ?>">
+                                <input type="text" class="form-control php-params" id="php-args-<?php echo str_replace('$', '', $arg['param'])?>" placeholder="<?php echo $arg['type']; ?>"  style="display:initial;width:84%;" value="<?php echo ($arg['type'] == 'array' && !empty($arg['default']) ? '[]' : $arg['default']); ?>">
                                 <?php endif ?>
                             </div>
                           </div>
