@@ -28,7 +28,7 @@ class IndexController extends Controller
         $search = $this->data['search'] ?? '';
         $service = $this->data['s'] ?? '';
         $this->view->services = $this->getService($service, $search);
-        $this->searchValue = $search;
+        $this->view->searchValue = $search;
     }
 
     /**
