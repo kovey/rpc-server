@@ -25,8 +25,10 @@ class IndexController extends Controller
      */
     public function indexAction() : void
     {
+        $search = $this->data['search'] ?? '';
         $service = $this->data['s'] ?? '';
-        $this->view->services = $this->getService($service);
+        $this->view->services = $this->getService($service, $search);
+        $this->searchValue = $search;
     }
 
     /**
@@ -36,7 +38,7 @@ class IndexController extends Controller
      *
      * @return Array
      */
-    private function getService(string $service) : Array
+    private function getService(string $service, string $search) : Array
     {
         $handler = Manager::get('server.rpc.handler');
         $services = array();
@@ -57,6 +59,10 @@ class IndexController extends Controller
             }
 
             $service = substr($file, 0, strlen($file) - 4);
+            if (!empty($search) && !str_contains($service, $search)) {
+                continue;
+            }
+
             $class = $handler . '\\' . ucfirst($service);
             try {
                 $info = Rf::get($class);

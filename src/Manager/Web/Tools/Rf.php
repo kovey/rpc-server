@@ -60,6 +60,9 @@ class Rf
                     if ($tlen > 1) {
                         $p = trim($tmpInfo[0]);
                         $default = trim($tmpInfo[1]);
+                        if (strtolower($default) == 'array') {
+                            $default .= '()';
+                        }
                     }
                     $ainfo = explode(' ', $p);
                     $len = count($ainfo);
