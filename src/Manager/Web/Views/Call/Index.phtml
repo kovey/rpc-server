@@ -63,7 +63,14 @@
                                         <?php endif ?>
                                     <?php endforeach ?>
                                 </select>
+                                <?php if ($arg['type'] == 'bool'): ?>
+                                <select class="form-control php-params" id="php-args-<?php echo str_replace('$', '', $arg['param']);?>" style="display:initial;width:84%;">
+                                <option value="true" <?php echo ($arg['default'] == 'true' ? 'selected' : '');?>>true</option>
+                                    <option value="false" <?php echo ($arg['default'] == 'false' ? 'selected' : '');?>>false</option>
+                                </select>
+                                <?php else: ?>
                                 <input type="text" class="form-control php-params" id="php-args-<?php echo str_replace('$', '', $arg['param'])?>" placeholder="<?php echo $arg['type']; ?>"  style="display:initial;width:84%;" value="<?php echo $arg['default']; ?>">
+                                <?php endif ?>
                             </div>
                           </div>
                       <?php endforeach ?>

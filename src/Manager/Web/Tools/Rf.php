@@ -41,8 +41,11 @@ class Rf
                 continue;
             }
 
+            $returnType = $method->getReturnType();
             $info = array(
-                'doc' => $method->getDocComment()
+                'doc' => $method->getDocComment(),
+                'return' => empty($returnType) ? 'mixed' : $returnType->__toString(),
+                'modifier' => 'public'
             );
 
             $params = $method->getParameters();

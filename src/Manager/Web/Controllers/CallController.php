@@ -44,6 +44,11 @@ class CallController extends Controller
         $obj->getStack()->setTraceId($traceId);
         $params = array();
         foreach ($args as $arg) {
+            if ($arg['type'] == 'bool') {
+                $params[] = $arg['value'] == 'true';
+                continue;
+            }
+
             if ($arg['type'] != 'array') {
                 $params[] = $arg['value'];
                 continue;
@@ -87,7 +92,7 @@ class CallController extends Controller
         $this->view->method = $this->data['m'] ?? '';
         $this->view->argsType = array(
             'other' => 'other',
-            'boolean' => 'boolean',
+            'bool' => 'boolean',
             'array' => 'array'
         );
     }
